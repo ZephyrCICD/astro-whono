@@ -129,6 +129,20 @@ export const assertAdminImageStaticShell = (label, body, expectedPath) => {
   ]);
 };
 
+export const assertAdminImageUploadStaticShell = (
+  label,
+  body,
+  expectedPath = '/api/admin/images/upload/'
+) => {
+  assertAdminApiStaticShell(label, body, expectedPath, [
+    '"result"',
+    '"src"',
+    '"path"',
+    '"fileName"',
+    '"mimeType"'
+  ]);
+};
+
 export const assertAdminPreviewStaticShell = (label, body, expectedPath = '/api/admin/preview/') => {
   assertAdminApiStaticShell(label, body, expectedPath, [
     '"html"',
@@ -164,6 +178,18 @@ export const assertAdminImageStaticResponse = (label, response, expectedPath) =>
     `${label} unexpectedly returned JSON in production preview`
   );
   assertAdminImageStaticShell(label, response.body, expectedPath);
+};
+
+export const assertAdminImageUploadStaticResponse = (
+  label,
+  response,
+  expectedPath = '/api/admin/images/upload/'
+) => {
+  expect(
+    !response.contentType.toLowerCase().includes('application/json'),
+    `${label} unexpectedly returned JSON in production preview`
+  );
+  assertAdminImageUploadStaticShell(label, response.body, expectedPath);
 };
 
 export const assertAdminPreviewStaticResponse = (label, response, expectedPath = '/api/admin/preview/') => {

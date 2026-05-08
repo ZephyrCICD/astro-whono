@@ -43,11 +43,11 @@ A minimal two-column Astro theme for personal writing and lightweight publishing
 ### Quick Start
 
 ```bash
-npm i
+npm install
 # Repeatable install (recommended for CI/troubleshooting)
 # npm ci
 npm run dev
-npm run build && npm run preview
+npm run build
 ```
 
 <details>
@@ -62,32 +62,34 @@ If execution policy blocks `npm.ps1`, use one of the following:
 
 ### Common Commands
 
-  - npm run dev
-  - npm run build
-  - npm run ci
-  - npm run new:bit
+  - `npm run dev`: start the local dev server
+  - `npm run build`: generate the static site
+  - `npm run preview`: preview the production build
+  - `npm run new:bit`: create a bits draft
 
 <details>
-  <summary>Check and regression commands</summary>
+  <summary>Maintainer checks</summary>
 
-Use them depending on the situation:
+These commands are for maintaining the theme itself. Regular writing and deployment usually do not require them.
 
 ```bash
-# Default regression entry (GitHub Actions)
-npm run ci
+# Baseline verification: Astro check, Vitest, build
+npm run verify
 
-# Manual release verification for absolute links / sitemap / RSS (requires the final production domain)
+# Markdown rendering contract: run after changing rendering, article styles, or the code block toolbar
+npm run build
+npm run check:markdown-smoke
+
+# Release artifact check: requires the final production domain
 SITE_URL=https://your-domain npm run build
 SITE_URL=https://your-domain npm run check:prod-artifacts
 
-# Only when changing Admin Console subroutes, /api/admin/** static boundaries, or dev/prod read-only boundaries
+# Admin boundary check: only when changing /admin/** or /api/admin/**
 npm run check:preview-admin
-```
 
-- `npm test` mainly covers tag utilities, shared Theme Console validation rules, and core pure-logic regressions around theme settings `revision`.
-- `npm run ci` is the default regression entry; `npm run ci:core` is kept only as a maintainer compatibility alias.
-- `npm run build` still works without `SITE_URL`, but SEO-related outputs will be incomplete.
-- Before release, if you need to verify absolute-link artifacts, set a real `SITE_URL` and run `npm run check:prod-artifacts`.
+# Production dependency audit: run before release or after dependency changes
+npm run audit:prod
+```
 </details>
 
 

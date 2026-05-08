@@ -59,13 +59,14 @@ const fileExists = async (filePath: string): Promise<boolean> => {
 export const validateAdminJsonWriteRequest = (
   request: Request,
   currentUrl: URL,
-  targetLabel: string
+  targetLabel: string,
+  actionLabel = '写入'
 ): AdminWriteRequestValidation | null => {
   const contentType = request.headers.get('content-type')?.toLowerCase() ?? '';
   if (!contentType.includes('application/json')) {
     return {
       status: 415,
-      error: `仅允许 application/json 请求写入 ${targetLabel}`
+      error: `仅允许 application/json 请求${actionLabel} ${targetLabel}`
     };
   }
 
@@ -77,14 +78,50 @@ export const validateAdminJsonWriteRequest = (
   if (!requestOrigin) {
     return {
       status: 403,
-      error: '写入请求缺少来源标识，仅允许从当前开发站点同源提交'
+      error: `${actionLabel}请求缺少来源标识，仅允许从当前开发站点同源提交`
     };
   }
 
   if (requestOrigin !== currentOrigin) {
     return {
       status: 403,
-      error: `仅允许从当前开发站点同源写入 ${targetLabel}`
+      error: `仅允许从当前开发站点同源${actionLabel} ${targetLabel}`
+    };
+  }
+
+  return null;
+};
+
+export const validateAdminFormDataWriteRequest = (
+  request: Request,
+  currentUrl: URL,
+  targetLabel: string,
+  actionLabel = '上传'
+): AdminWriteRequestValidation | null => {
+  const contentType = request.headers.get('content-type')?.toLowerCase() ?? '';
+  if (!contentType.includes('multipart/form-data')) {
+    return {
+      status: 415,
+      error: `仅允许 multipart/form-data 请求${actionLabel} ${targetLabel}`
+    };
+  }
+
+  const currentOrigin = currentUrl.origin;
+  const origin = parseHeaderOrigin(request.headers.get('origin'));
+  const refererOrigin = parseHeaderOrigin(request.headers.get('referer'));
+  const requestOrigin = origin ?? refererOrigin;
+
+  if (!requestOrigin) {
+    return {
+      status: 403,
+      error: `${actionLabel}请求缺少来源标识，仅允许从当前开发站点同源提交`
+    };
+  }
+
+  if (requestOrigin !== currentOrigin) {
+    return {
+      status: 403,
+      error: `仅允许从当前开发站点同源${actionLabel} ${targetLabel}`
     };
   }
 

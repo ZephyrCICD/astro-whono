@@ -1,10 +1,12 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   assertAdminOverviewHeader,
   assertAdminContentStaticShell,
   assertAdminImageStaticShell,
+  assertAdminImageUploadStaticShell,
+  assertAdminPreviewStaticShell,
   assertNoAdminRouteNav,
   assertAdminSettingsStaticShell,
   expect
@@ -21,6 +23,26 @@ export const resolveRequiredSiteUrl = () => {
 const readText = (filePath) => {
   expect(existsSync(filePath), `Expected build artifact is missing: ${filePath}`);
   return readFileSync(filePath, 'utf8');
+};
+
+const findAdminContentEditArtifactDirs = () => {
+  const root = 'dist/admin/content';
+  if (!existsSync(root)) return [];
+
+  const matches = [];
+  const walk = (dirPath) => {
+    for (const entry of readdirSync(dirPath, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const fullPath = path.join(dirPath, entry.name);
+      if (entry.name === '_edit') {
+        matches.push(fullPath);
+      }
+      walk(fullPath);
+    }
+  };
+
+  walk(root);
+  return matches;
 };
 
 const PREV_LINK_PATTERN = /<a class="prev-next__link prev-next__link--prev"[^>]*rel="prev">/;
@@ -40,9 +62,6 @@ export const runProductionArtifactCheck = async (options = {}) => {
     'dist/about/index.html',
     'dist/admin/index.html',
     'dist/admin/content/index.html',
-    'dist/admin/content/essay/index.html',
-    'dist/admin/content/bits/index.html',
-    'dist/admin/content/memo/index.html',
     'dist/admin/images/index.html',
     'dist/admin/checks/index.html',
     'dist/bits/index.html',
@@ -51,8 +70,10 @@ export const runProductionArtifactCheck = async (options = {}) => {
     'dist/api/admin/settings',
     'dist/api/admin/data/settings',
     'dist/api/admin/content/entry',
+    'dist/api/admin/preview',
     'dist/api/admin/images/list',
-    'dist/api/admin/images/meta'
+    'dist/api/admin/images/meta',
+    'dist/api/admin/images/upload'
   ];
 
   for (const artifactPath of requiredArtifacts) {
@@ -102,23 +123,29 @@ export const runProductionArtifactCheck = async (options = {}) => {
 
   const adminHtml = readText('dist/admin/index.html');
   const adminContentHtml = readText('dist/admin/content/index.html');
-  const adminContentEssayHtml = readText('dist/admin/content/essay/index.html');
-  const adminContentBitsHtml = readText('dist/admin/content/bits/index.html');
-  const adminContentMemoHtml = readText('dist/admin/content/memo/index.html');
   const adminImageHtml = readText('dist/admin/images/index.html');
   const adminChecksHtml = readText('dist/admin/checks/index.html');
   const adminThemeHtml = readText('dist/admin/theme/index.html');
   const adminDataHtml = readText('dist/admin/data/index.html');
   const readonlyAdminHtmlChecks = [
     ['dist/admin/content/index.html', adminContentHtml, 'Content Console'],
-    ['dist/admin/content/essay/index.html', adminContentEssayHtml, 'Content Console'],
-    ['dist/admin/content/bits/index.html', adminContentBitsHtml, 'Content Console'],
-    ['dist/admin/content/memo/index.html', adminContentMemoHtml, 'Content Console'],
     ['dist/admin/images/index.html', adminImageHtml, 'Images Console'],
     ['dist/admin/checks/index.html', adminChecksHtml, 'Checks Console'],
     ['dist/admin/theme/index.html', adminThemeHtml, 'Theme Console'],
     ['dist/admin/data/index.html', adminDataHtml, 'Data Console']
   ];
+  [
+    'dist/admin/content/essay/index.html',
+    'dist/admin/content/bits/index.html',
+    'dist/admin/content/memo/index.html'
+  ].forEach((filePath) => {
+    expect(!existsSync(filePath), `${filePath} should not be generated after collection list routes were removed`);
+  });
+  const adminContentEditArtifactDirs = findAdminContentEditArtifactDirs();
+  expect(
+    adminContentEditArtifactDirs.length === 0,
+    `Production build should not generate per-entry admin content edit artifacts: ${adminContentEditArtifactDirs.join(', ')}`
+  );
 
   assertAdminOverviewHeader('dist/admin/index.html', adminHtml);
   if (adminHtml.includes('data-admin-overview-mode="hidden"')) {
@@ -291,6 +318,12 @@ export const runProductionArtifactCheck = async (options = {}) => {
     adminContentEntryArtifact,
     '/api/admin/content/entry/'
   );
+  const adminPreviewArtifact = readText('dist/api/admin/preview');
+  assertAdminPreviewStaticShell(
+    'dist/api/admin/preview',
+    adminPreviewArtifact,
+    '/api/admin/preview/'
+  );
   const adminImageListArtifact = readText('dist/api/admin/images/list');
   assertAdminImageStaticShell(
     'dist/api/admin/images/list',
@@ -302,6 +335,12 @@ export const runProductionArtifactCheck = async (options = {}) => {
     'dist/api/admin/images/meta',
     adminImageMetaArtifact,
     '/api/admin/images/meta/'
+  );
+  const adminImageUploadArtifact = readText('dist/api/admin/images/upload');
+  assertAdminImageUploadStaticShell(
+    'dist/api/admin/images/upload',
+    adminImageUploadArtifact,
+    '/api/admin/images/upload/'
   );
 
   console.log('Production artifact verification passed.');

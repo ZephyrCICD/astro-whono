@@ -1,8 +1,6 @@
 <script lang="ts">
-import ImagePlus from '@lucide/svelte/icons/image-plus';
-import Upload from '@lucide/svelte/icons/upload';
-import X from '@lucide/svelte/icons/x';
 import { createModalDialogFocusController } from '../../../scripts/admin-console/modal-dialog-focus';
+import AdminEditorIcon from './AdminEditorIcon.svelte';
 
 type UploadResult = {
   src: string;
@@ -218,7 +216,7 @@ $effect(() => {
         <header class="admin-modal__head admin-editor-image-insert__head">
           <div class="admin-editor-image-insert__title-wrap">
             <span class="admin-editor-image-insert__icon" aria-hidden="true">
-              <ImagePlus size={16} strokeWidth={2} />
+              <AdminEditorIcon name="image-plus" size={16} strokeWidth={2} />
             </span>
             <h3 id="admin-editor-image-insert-title" class="admin-modal__title admin-content-section-title">插入图片</h3>
           </div>
@@ -230,7 +228,7 @@ $effect(() => {
             disabled={busy}
             onclick={closeDialog}
           >
-            <X size={16} strokeWidth={2} aria-hidden="true" />
+            <AdminEditorIcon name="close" size={16} strokeWidth={2} />
           </button>
         </header>
 
@@ -252,7 +250,7 @@ $effect(() => {
             onclick={requestFileSelection}
           >
             <span class="admin-editor-image-insert__dropzone-icon" aria-hidden="true">
-              <Upload size={18} strokeWidth={2} />
+              <AdminEditorIcon name="upload" size={18} strokeWidth={2} />
             </span>
             <span class="admin-editor-image-insert__dropzone-copy">
               <strong>{selectedFile ? selectedFile.name : '选择图片'}</strong>

@@ -38,6 +38,12 @@ const getIssue = (path: string): string =>
       <p class="admin-content-editor__error" hidden={!getIssue('date')}>{getIssue('date')}</p>
     </label>
 
+    <label class="admin-field admin-content-editor__field" class:is-invalid={Boolean(getIssue('publishedAt'))}>
+      <span class="admin-field__label">发布时间</span>
+      <input class="admin-field__control" name="publishedAt" type="text" bind:value={value.publishedAt} placeholder="2024-11-23T18:00:00+08:00" {disabled} />
+      <p class="admin-content-editor__error" hidden={!getIssue('publishedAt')}>{getIssue('publishedAt')}</p>
+    </label>
+
     <label class="admin-field admin-content-editor__field" class:is-invalid={Boolean(getIssue('badge'))}>
       <span class="admin-field__label">badge</span>
       <input class="admin-field__control" name="badge" type="text" bind:value={value.badge} {disabled} />

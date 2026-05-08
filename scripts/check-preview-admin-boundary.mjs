@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
-import { cp, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -7,6 +8,8 @@ import { preview } from 'astro';
 import {
   assertAdminContentStaticResponse,
   assertAdminImageStaticResponse,
+  assertAdminImageUploadStaticResponse,
+  assertAdminPreviewStaticResponse,
   assertAdminOverviewHeader,
   assertHasAdminRouteNav,
   assertNoAdminRouteNav,
@@ -20,9 +23,13 @@ import {
 const projectRoot = path.resolve('.');
 const astroCliPath = path.join(projectRoot, 'node_modules', 'astro', 'bin', 'astro.mjs');
 const defaultSettingsDir = path.join(projectRoot, 'src', 'data', 'settings');
+const ADMIN_CONTENT_SMOKE_ENTRY_ID = 'admin-console-guide';
+const ADMIN_CONTENT_SMOKE_INITIAL_TITLE = 'Admin Content HTTP Smoke';
+const ADMIN_CONTENT_SMOKE_UPDATED_TITLE = 'Admin Content HTTP Smoke Updated';
 const previewHost = '127.0.0.1';
 const ADMIN_BOOTSTRAP_XSS_SENTINEL = '__ADMIN_BOOTSTRAP_XSS_SENTINEL__';
 const ADMIN_BOOTSTRAP_BREAKOUT_PAYLOAD = `</script><script>window.${ADMIN_BOOTSTRAP_XSS_SENTINEL}=1</script>`;
+const ADMIN_CONTENT_LOCAL_DEV_NOTICE = '若需查看或编辑内容索引';
 
 const getRequestedPort = (envName, fallbackPort) => {
   const parsed = Number(process.env[envName] ?? String(fallbackPort));
@@ -74,16 +81,41 @@ const resolvePreviewPort = (server, fallbackPort) => {
   return address && typeof address === 'object' ? address.port : fallbackPort;
 };
 
-const createTempSettingsFixture = async () => {
-  const tempRoot = await mkdtemp(path.join(tmpdir(), 'astro-whono-admin-settings-'));
+const createAdminContentSmokeSource = () => [
+  '---',
+  `title: ${ADMIN_CONTENT_SMOKE_INITIAL_TITLE}`,
+  'description: Dev HTTP content write smoke fixture',
+  'date: 2026-05-01',
+  'tags:',
+  '  - admin',
+  '  - smoke',
+  'draft: false',
+  'archive: true',
+  '---',
+  '',
+  '# Admin Content HTTP Smoke',
+  '',
+  'Initial body.',
+  ''
+].join('\n');
+
+const createTempAdminDevFixture = async () => {
+  const tempRoot = await mkdtemp(path.join(tmpdir(), 'astro-whono-admin-dev-'));
   const settingsDir = path.join(tempRoot, 'settings');
+  const contentEntryPath = path.join(tempRoot, 'src', 'content', 'essay', `${ADMIN_CONTENT_SMOKE_ENTRY_ID}.md`);
   await cp(defaultSettingsDir, settingsDir, { recursive: true });
+  await mkdir(path.dirname(contentEntryPath), { recursive: true });
+  await writeFile(contentEntryPath, createAdminContentSmokeSource(), 'utf8');
+
   return {
     tempRoot,
     settingsDir,
+    contentEntryPath,
     cleanup: () => rm(tempRoot, { recursive: true, force: true })
   };
 };
+
+const hashSourceText = (sourceText) => createHash('sha1').update(sourceText).digest('hex');
 
 const createJsonRequestInit = (baseUrl, payload) => ({
   method: 'POST',
@@ -93,6 +125,27 @@ const createJsonRequestInit = (baseUrl, payload) => ({
     origin: baseUrl
   },
   body: JSON.stringify(payload)
+});
+
+const createAdminContentSmokeFrontmatter = (overrides = {}) => ({
+  title: ADMIN_CONTENT_SMOKE_INITIAL_TITLE,
+  description: 'Dev HTTP content write smoke fixture',
+  date: '2026-05-01',
+  tagsText: 'admin\nsmoke',
+  draft: false,
+  archive: true,
+  slug: '',
+  cover: '',
+  badge: '',
+  ...overrides
+});
+
+const createAdminContentSmokeWritePayload = (revision, options = {}) => ({
+  collection: 'essay',
+  entryId: ADMIN_CONTENT_SMOKE_ENTRY_ID,
+  revision,
+  frontmatter: createAdminContentSmokeFrontmatter(options.frontmatter),
+  ...(typeof options.body === 'string' ? { body: options.body } : {})
 });
 
 const assertAdminOverviewShell = (label, response, options = {}) => {
@@ -182,8 +235,8 @@ const assertAdminContentPlaceholderShell = (label, response, options = {}) => {
   );
   expect(response.body.includes('Content Console'), `${label} is missing the Content Console route heading`);
   expect(
-    response.body.includes('后台文章管理与可视化写作正在开发中'),
-    `${label} is missing the Content Console development notice`
+    response.body.includes(ADMIN_CONTENT_LOCAL_DEV_NOTICE),
+    `${label} is missing the Content Console local-dev notice`
   );
   if (expectNav) {
     assertHasAdminRouteNav(label, response.body);
@@ -191,6 +244,54 @@ const assertAdminContentPlaceholderShell = (label, response, options = {}) => {
     assertNoAdminRouteNav(label, response.body);
   }
   expect(!response.body.includes('data-admin-content-root'), `${label} should stay readonly outside dev`);
+};
+
+const assertAdminContentEditStaticMissing = (label, response) => {
+  expect(
+    response.status === 404,
+    `${label} should not be generated in the static preview build; got ${response.status}`
+  );
+};
+
+const assertAdminContentOverviewDevShell = (label, response) => {
+  expect(response.status === 200, `${label} returned ${response.status}`);
+  expect(
+    response.contentType.toLowerCase().includes('text/html'),
+    `${label} did not return HTML`
+  );
+  expect(response.body.includes('Content Console'), `${label} is missing the Content Console route heading`);
+  assertHasAdminRouteNav(label, response.body);
+  expect(response.body.includes('内容管理'), `${label} is missing the content overview panel`);
+  expect(response.body.includes('data-admin-content-root'), `${label} should emit the dev content console root`);
+  expect(
+    !response.body.includes(ADMIN_CONTENT_LOCAL_DEV_NOTICE),
+    `${label} should show the dev content overview instead of the placeholder`
+  );
+};
+
+const assertAdminContentEditDevShell = (label, response) => {
+  expect(response.status === 200, `${label} returned ${response.status}`);
+  expect(
+    response.contentType.toLowerCase().includes('text/html'),
+    `${label} did not return HTML`
+  );
+  expect(
+    response.body.includes('data-admin-header-visible="false"'),
+    `${label} should use the compact essay edit shell`
+  );
+  assertNoAdminRouteNav(label, response.body);
+  expect(
+    response.body.includes('data-admin-essay-editor-island'),
+    `${label} should emit the essay Svelte editor island marker`
+  );
+  expect(
+    !response.body.includes('id="admin-content-bootstrap"'),
+    `${label} should not emit the legacy content editor bootstrap for essay`
+  );
+  expect(
+    !response.body.includes(ADMIN_CONTENT_LOCAL_DEV_NOTICE),
+    `${label} should show the dev content collection instead of the placeholder`
+  );
 };
 
 const assertAdminThemeDevBootstrapSafe = (label, response) => {
@@ -213,6 +314,88 @@ const assertAdminThemeDevBootstrapSafe = (label, response) => {
   expect(
     !response.body.includes(`<script>window.${ADMIN_BOOTSTRAP_XSS_SENTINEL}=1</script>`),
     `${label} bootstrap still emits an executable sentinel script tag`
+  );
+};
+
+const runDevAdminContentWriteSmoke = async (baseUrl, fixture) => {
+  const beforeDryRun = await readFile(fixture.contentEntryPath, 'utf8');
+  const initialRevision = hashSourceText(beforeDryRun);
+  const nextBody = [
+    '# Admin Content HTTP Smoke',
+    '',
+    'Updated through the real dev HTTP content write smoke.',
+    ''
+  ].join('\n');
+  const writePayload = createAdminContentSmokeWritePayload(initialRevision, {
+    frontmatter: {
+      title: ADMIN_CONTENT_SMOKE_UPDATED_TITLE
+    },
+    body: nextBody
+  });
+
+  const readResponse = await request(
+    baseUrl,
+    `/api/admin/content/entry/?collection=essay&entryId=${encodeURIComponent(ADMIN_CONTENT_SMOKE_ENTRY_ID)}`
+  );
+
+  expect(readResponse.status === 200, `Dev GET /api/admin/content/entry/?collection=essay returned ${readResponse.status}`);
+  expect(readResponse.json?.ok === true, 'Dev Content GET did not return ok=true');
+  expect(readResponse.json?.payload?.collection === 'essay', 'Dev Content GET returned the wrong collection');
+  expect(readResponse.json?.payload?.entryId === ADMIN_CONTENT_SMOKE_ENTRY_ID, 'Dev Content GET returned the wrong entryId');
+  expect(readResponse.json?.payload?.revision === initialRevision, 'Dev Content GET returned an unexpected revision');
+  expect(
+    readResponse.json?.payload?.values?.title === ADMIN_CONTENT_SMOKE_INITIAL_TITLE,
+    'Dev Content GET returned an unexpected title'
+  );
+
+  const dryRunResponse = await request(
+    baseUrl,
+    '/api/admin/content/entry/?dryRun=1',
+    createJsonRequestInit(baseUrl, writePayload)
+  );
+
+  expect(dryRunResponse.status === 200, `Dev POST /api/admin/content/entry/?dryRun=1 returned ${dryRunResponse.status}`);
+  expect(dryRunResponse.json?.ok === true, 'Dev Content dry-run did not succeed');
+  expect(dryRunResponse.json?.dryRun === true, 'Dev Content dry-run did not mark dryRun=true');
+  expect(dryRunResponse.json?.result?.changed === true, 'Dev Content dry-run did not detect changes');
+  expect(dryRunResponse.json?.result?.written === false, 'Dev Content dry-run should not write the source file');
+  expect(
+    Array.isArray(dryRunResponse.json?.result?.changedFields)
+      && dryRunResponse.json.result.changedFields.includes('title')
+      && dryRunResponse.json.result.changedFields.includes('body'),
+    'Dev Content dry-run did not report the expected title/body changes'
+  );
+
+  const afterDryRun = await readFile(fixture.contentEntryPath, 'utf8');
+  expect(afterDryRun === beforeDryRun, 'Dev Content dry-run unexpectedly mutated the source file');
+
+  const saveResponse = await request(
+    baseUrl,
+    '/api/admin/content/entry/',
+    createJsonRequestInit(baseUrl, writePayload)
+  );
+
+  expect(saveResponse.status === 200, `Dev POST /api/admin/content/entry/ returned ${saveResponse.status}`);
+  expect(saveResponse.json?.ok === true, 'Dev Content write did not succeed');
+  expect(saveResponse.json?.result?.changed === true, 'Dev Content write did not report changes');
+  expect(saveResponse.json?.result?.written === true, 'Dev Content write did not mark written=true');
+  expect(
+    saveResponse.json?.payload?.values?.title === ADMIN_CONTENT_SMOKE_UPDATED_TITLE,
+    'Dev Content write did not return the updated title'
+  );
+  expect(
+    saveResponse.json?.payload?.bodyText === nextBody,
+    'Dev Content write did not return the updated essay body'
+  );
+
+  const afterSave = await readFile(fixture.contentEntryPath, 'utf8');
+  expect(afterSave !== beforeDryRun, 'Dev Content write did not update the source file');
+  expect(afterSave.includes(`title: ${ADMIN_CONTENT_SMOKE_UPDATED_TITLE}`), 'Dev Content write persisted an unexpected title');
+  expect(afterSave.endsWith(nextBody), 'Dev Content write persisted an unexpected essay body');
+  expect(
+    saveResponse.json?.payload?.revision === hashSourceText(afterSave)
+      && saveResponse.json.payload.revision !== initialRevision,
+    'Dev Content write did not return a fresh revision'
   );
 };
 
@@ -253,15 +436,26 @@ export const runPreviewAdminBoundaryCheck = async () => {
     const adminOverviewResponse = await request(baseUrl, '/admin/');
     const adminThemeResponse = await request(baseUrl, '/admin/theme/');
     const adminContentResponse = await request(baseUrl, '/admin/content/');
-    const adminEssayContentResponse = await request(baseUrl, '/admin/content/essay/');
+    const adminEssayContentEditResponse = await request(baseUrl, '/admin/content/essay/_edit/admin-console-guide/');
+    const adminSvelteSpikeResponse = await request(baseUrl, '/admin/content/svelte-spike/');
     const adminImageResponse = await request(baseUrl, '/admin/images/');
     const adminChecksResponse = await request(baseUrl, '/admin/checks/');
     const adminDataResponse = await request(baseUrl, '/admin/data/');
     const getResponse = await request(baseUrl, '/api/admin/settings/');
     const exportResponse = await request(baseUrl, '/api/admin/data/settings/');
     const contentGetResponse = await request(baseUrl, '/api/admin/content/entry/');
+    const previewGetResponse = await request(baseUrl, '/api/admin/preview/');
     const imageListResponse = await request(baseUrl, '/api/admin/images/list/');
     const imageMetaResponse = await request(baseUrl, '/api/admin/images/meta/');
+    const imageUploadGetResponse = await request(baseUrl, '/api/admin/images/upload/');
+    const imageUploadFormData = new FormData();
+    imageUploadFormData.set('collection', 'essay');
+    imageUploadFormData.set('entryId', 'preview-boundary-demo');
+    imageUploadFormData.set(
+      'image',
+      new Blob(['preview boundary'], { type: 'image/png' }),
+      'preview-boundary.png'
+    );
     const contentPostResponse = await request(baseUrl, '/api/admin/content/entry/', {
       method: 'POST',
       headers: {
@@ -275,6 +469,24 @@ export const runPreviewAdminBoundaryCheck = async () => {
         frontmatter: {}
       })
     });
+    const previewPostResponse = await request(baseUrl, '/api/admin/preview/', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        origin: baseUrl
+      },
+      body: JSON.stringify({
+        collection: 'essay',
+        source: '# Preview'
+      })
+    });
+    const imageUploadPostResponse = await request(baseUrl, '/api/admin/images/upload/', {
+      method: 'POST',
+      headers: {
+        origin: baseUrl
+      },
+      body: imageUploadFormData
+    });
     const postResponse = await request(baseUrl, '/api/admin/settings/', {
       method: 'POST',
       headers: {
@@ -287,16 +499,25 @@ export const runPreviewAdminBoundaryCheck = async () => {
     assertAdminOverviewShell('Preview GET /admin/', adminOverviewResponse);
     assertReadonlyAdminThemeShell('Preview GET /admin/theme/', adminThemeResponse);
     assertAdminContentPlaceholderShell('Preview GET /admin/content/', adminContentResponse);
-    assertAdminContentPlaceholderShell('Preview GET /admin/content/essay/', adminEssayContentResponse);
+    assertAdminContentEditStaticMissing('Preview GET /admin/content/essay/_edit/admin-console-guide/', adminEssayContentEditResponse);
+    assertAdminContentPlaceholderShell('Preview GET /admin/content/svelte-spike/', adminSvelteSpikeResponse);
+    expect(
+      !adminSvelteSpikeResponse.body.includes('data-admin-svelte-spike'),
+      'Preview GET /admin/content/svelte-spike/ should not emit the Svelte spike island'
+    );
     assertReadonlyAdminImageShell('Preview GET /admin/images/', adminImageResponse);
     assertReadonlyAdminChecksShell('Preview GET /admin/checks/', adminChecksResponse);
     assertReadonlyAdminDataShell('Preview GET /admin/data/', adminDataResponse);
     assertAdminSettingsStaticResponse('GET /api/admin/settings/', getResponse);
     assertAdminSettingsStaticResponse('GET /api/admin/data/settings/', exportResponse, '/api/admin/data/settings/');
     assertAdminContentStaticResponse('GET /api/admin/content/entry/', contentGetResponse);
+    assertAdminPreviewStaticResponse('GET /api/admin/preview/', previewGetResponse);
     assertAdminImageStaticResponse('GET /api/admin/images/list/', imageListResponse, '/api/admin/images/list/');
     assertAdminImageStaticResponse('GET /api/admin/images/meta/', imageMetaResponse, '/api/admin/images/meta/');
+    assertAdminImageUploadStaticResponse('GET /api/admin/images/upload/', imageUploadGetResponse);
     assertAdminContentStaticResponse('POST /api/admin/content/entry/', contentPostResponse);
+    assertAdminPreviewStaticResponse('POST /api/admin/preview/', previewPostResponse);
+    assertAdminImageUploadStaticResponse('POST /api/admin/images/upload/', imageUploadPostResponse);
     assertAdminSettingsStaticResponse('POST /api/admin/settings/', postResponse);
     console.log('Preview admin boundary check passed.');
   } finally {
@@ -305,7 +526,7 @@ export const runPreviewAdminBoundaryCheck = async () => {
 };
 
 export const runDevAdminSettingsSmokeCheck = async () => {
-  const fixture = await createTempSettingsFixture();
+  const fixture = await createTempAdminDevFixture();
   const requestedPort = getRequestedPort('CI_DEV_ADMIN_PORT', 4324);
   const availablePort = await findAvailablePort(previewHost, requestedPort);
   const baseUrl = `http://${previewHost}:${availablePort}`;
@@ -316,6 +537,7 @@ export const runDevAdminSettingsSmokeCheck = async () => {
     env: {
       ...process.env,
       NODE_ENV: 'development',
+      ASTRO_WHONO_INTERNAL_TEST_PROJECT_ROOT: fixture.tempRoot,
       ASTRO_WHONO_INTERNAL_TEST_SETTINGS: '1',
       ASTRO_WHONO_INTERNAL_TEST_SETTINGS_DIR: fixture.settingsDir
     },
@@ -346,9 +568,10 @@ export const runDevAdminSettingsSmokeCheck = async () => {
     expect(payload.settings && typeof payload.settings === 'object', 'Dev payload settings snapshot is missing');
 
     const contentOverviewResponse = await request(baseUrl, '/admin/content/');
-    const contentEssayResponse = await request(baseUrl, '/admin/content/essay/');
-    assertAdminContentPlaceholderShell('Dev GET /admin/content/', contentOverviewResponse, { expectNav: true });
-    assertAdminContentPlaceholderShell('Dev GET /admin/content/essay/', contentEssayResponse, { expectNav: true });
+    const contentEssayEditResponse = await request(baseUrl, '/admin/content/essay/_edit/admin-console-guide/');
+    assertAdminContentOverviewDevShell('Dev GET /admin/content/', contentOverviewResponse);
+    assertAdminContentEditDevShell('Dev GET /admin/content/essay/_edit/admin-console-guide/', contentEssayEditResponse);
+    await runDevAdminContentWriteSmoke(baseUrl, fixture);
 
     const uiSettingsPath = path.join(fixture.settingsDir, 'ui.json');
     const beforeDryRun = await readFile(uiSettingsPath, 'utf8');

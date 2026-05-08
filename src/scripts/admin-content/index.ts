@@ -1,4 +1,14 @@
 import { createAdminImagePicker } from '../admin-shared/image-picker';
+import {
+  getPayloadErrors,
+  getPayloadIssues,
+  getPayloadResult,
+  getPayloadRevision,
+  isRecord,
+  parseResponseBody,
+  type AdminContentIssue,
+  type AdminContentWriteResult
+} from './entry-transport';
 import { initAdminContentBitsImagesEditor } from './images-editor';
 
 type AdminContentBootstrap = {
@@ -8,22 +18,7 @@ type AdminContentBootstrap = {
   revision: string;
 };
 
-type AdminContentIssue = {
-  path: string;
-  message: string;
-};
-
-type AdminContentWriteResult = {
-  changed: boolean;
-  written: boolean;
-  changedFields: string[];
-  relativePath: string;
-};
-
 const adminContentRoot = document.querySelector<HTMLElement>('[data-admin-content-root]');
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const parseBootstrap = (value: string): AdminContentBootstrap | null => {
   try {
@@ -46,48 +41,11 @@ const parseBootstrap = (value: string): AdminContentBootstrap | null => {
   }
 };
 
-const getStringArray = (value: unknown): string[] =>
-  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
-
-const parseResponseBody = async (response: Response): Promise<unknown> => {
-  const text = await response.text();
-  if (!text.trim()) return null;
-
-  try {
-    return JSON.parse(text) as unknown;
-  } catch {
-    return text;
-  }
-};
-
-const getPayloadErrors = (value: unknown): string[] =>
-  isRecord(value) ? getStringArray(value.errors) : [];
-
-const getPayloadIssues = (value: unknown): AdminContentIssue[] => {
-  if (!isRecord(value) || !Array.isArray(value.issues)) return [];
-
-  return value.issues
-    .filter((item): item is AdminContentIssue => isRecord(item) && typeof item.path === 'string' && typeof item.message === 'string')
-    .map((item) => ({
-      path: item.path.trim(),
-      message: item.message.trim()
-    }));
-};
-
-const getPayloadRevision = (value: unknown): string | null => {
-  if (!isRecord(value) || !isRecord(value.payload)) return null;
-  const revision = value.payload.revision;
-  return typeof revision === 'string' && revision.trim().length > 0 ? revision.trim() : null;
-};
-
-const getPayloadResult = (value: unknown): AdminContentWriteResult | null => {
-  if (!isRecord(value) || !isRecord(value.result)) return null;
-  return {
-    changed: value.result.changed === true,
-    written: value.result.written === true,
-    changedFields: getStringArray(value.result.changedFields),
-    relativePath: typeof value.result.relativePath === 'string' ? value.result.relativePath.trim() : ''
-  };
+const buildWriteEndpoint = (endpoint: string, dryRun: boolean): string => {
+  if (!dryRun) return endpoint;
+  const url = new URL(endpoint, window.location.href);
+  url.searchParams.set('dryRun', '1');
+  return url.toString();
 };
 
 if (!adminContentRoot) {
@@ -212,34 +170,13 @@ if (!adminContentRoot) {
     errorBannerEl.hidden = false;
   };
 
-  adminContentRoot.addEventListener('click', async (event) => {
-    if (!(event.target instanceof Element)) return;
-
-    const button = event.target.closest<HTMLButtonElement>('[data-admin-copy-button]');
-    if (!(button instanceof HTMLButtonElement)) return;
-
-    const copyText = button.dataset.copyText?.trim() ?? '';
-    const copyLabel = button.dataset.copyLabel?.trim() ?? '内容';
-    if (!copyText) {
-      setStatus('error', `${copyLabel} 为空，无法复制`);
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(copyText);
-      setStatus('ok', `已复制${copyLabel}`);
-    } catch {
-      setStatus('warn', `浏览器剪贴板不可用，请手动复制${copyLabel}`);
-    }
-  });
-
   if (
     !(bootstrapEl instanceof HTMLDivElement)
     || !(editorForm instanceof HTMLFormElement)
     || !(dryRunBtn instanceof HTMLButtonElement)
     || !(saveBtn instanceof HTMLButtonElement)
   ) {
-    setStatus('idle', '等待选择条目或复制路径', { announce: false });
+    setStatus('idle', '等待选择条目', { announce: false });
   } else {
     const bootstrap = parseBootstrap(bootstrapEl.textContent ?? '');
     if (!bootstrap) {
@@ -331,7 +268,7 @@ if (!adminContentRoot) {
 
         try {
           const response = await fetch(
-            dryRun ? `${bootstrap.endpoint}?dryRun=1` : bootstrap.endpoint,
+            buildWriteEndpoint(bootstrap.endpoint, dryRun),
             {
               method: 'POST',
               headers: {
@@ -410,7 +347,7 @@ if (!adminContentRoot) {
       });
 
       syncButtons();
-      setStatus('idle', '等待选择条目、复制路径或执行 dry-run', { announce: false });
+      setStatus('idle', '等待选择条目或执行 dry-run', { announce: false });
     }
   }
 }

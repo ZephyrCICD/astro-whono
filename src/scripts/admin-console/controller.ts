@@ -2,6 +2,7 @@ import type {
   ThemeSettingsEditableErrorState,
   ThemeSettingsEditablePayload
 } from '@/lib/theme-settings';
+import { ADMIN_SETTINGS_API_PATH } from '@/lib/admin-console/admin-api-paths';
 import type { AdminThemeControls } from './controls';
 import type { createFormCodec, EditableSettings } from './form-codec';
 import { createInvalidSettingsBannerItems } from './invalid-settings-banner';
@@ -232,7 +233,7 @@ export const createAdminThemeController = ({
         return 'locked';
       }
       if (!extractSettingsPayload(payload)) {
-        console.warn('Theme Console bootstrap payload is invalid; falling back to /api/admin/settings/.');
+        console.warn(`Theme Console bootstrap payload is invalid; falling back to ${ADMIN_SETTINGS_API_PATH}.`);
         return 'fallback';
       }
       loadPayload(payload, 'bootstrap', { announceStatus: false });
@@ -244,7 +245,7 @@ export const createAdminThemeController = ({
   };
 
   const loadFromApi = async (): Promise<void> => {
-    uiState.setStatus('loading', '正在读取 /api/admin/settings', { announce: false });
+    uiState.setStatus('loading', `正在读取 ${ADMIN_SETTINGS_API_PATH}`, { announce: false });
     try {
       const response = await fetch(endpoint, {
         method: 'GET',

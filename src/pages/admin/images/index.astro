@@ -5,7 +5,9 @@ import AdminReadonlyNotice from '../../../components/admin/AdminReadonlyNotice.a
 import AdminShell from '../../../components/admin/AdminShell.astro';
 import {
   ADMIN_IMAGE_LIST_API_PATH,
-  ADMIN_IMAGE_META_API_PATH,
+  ADMIN_IMAGE_META_API_PATH
+} from '../../../lib/admin-console/admin-api-paths';
+import {
   invalidateAdminImageCaches,
   listAdminImageBrowseIndex,
   type AdminImageBrowseIndexItem

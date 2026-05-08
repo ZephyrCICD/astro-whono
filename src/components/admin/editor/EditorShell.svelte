@@ -1,16 +1,4 @@
 <script lang="ts">
-import Bold from '@lucide/svelte/icons/bold';
-import Braces from '@lucide/svelte/icons/braces';
-import CodeXml from '@lucide/svelte/icons/code-xml';
-import Heading2 from '@lucide/svelte/icons/heading-2';
-import Image from '@lucide/svelte/icons/image';
-import Italic from '@lucide/svelte/icons/italic';
-import Link from '@lucide/svelte/icons/link';
-import List from '@lucide/svelte/icons/list';
-import ListCheck from '@lucide/svelte/icons/list-check';
-import ListOrdered from '@lucide/svelte/icons/list-ordered';
-import Quote from '@lucide/svelte/icons/quote';
-import Table2 from '@lucide/svelte/icons/table-2';
 import type { AdminEssayEditorValues } from '../../../lib/admin-console/content-shared';
 import { shouldGuardAdminNavigation } from '../../../scripts/admin-console/navigation-guard';
 import {
@@ -27,6 +15,7 @@ import {
   type AdminContentWriteResult
 } from '../../../scripts/admin-content/entry-transport';
 import { flattenEntryIdToSlug } from '../../../utils/slug-rules';
+import AdminEditorIcon from './AdminEditorIcon.svelte';
 import ArticleInfoDialog from './ArticleInfoDialog.svelte';
 import BodyEditor from './BodyEditor.svelte';
 import ImageInsertDialog from './ImageInsertDialog.svelte';
@@ -55,18 +44,18 @@ const FRONTMATTER_PANEL_ID = 'admin-editor-frontmatter-panel';
 const FRONTMATTER_ISSUE_PATHS = new Set(['title', 'date', 'description', 'tags', 'slug', 'badge', 'cover']);
 
 const markdownTools = [
-  { id: 'heading', label: '二级标题', icon: Heading2 },
-  { id: 'bold', label: '加粗', icon: Bold },
-  { id: 'italic', label: '斜体', icon: Italic },
-  { id: 'quote', label: '引用', icon: Quote },
-  { id: 'link', label: '链接', icon: Link },
-  { id: 'image', label: '图片', icon: Image },
-  { id: 'code', label: '行内代码', icon: CodeXml },
-  { id: 'codeBlock', label: '代码块', icon: Braces },
-  { id: 'list', label: '无序列表', icon: List },
-  { id: 'orderedList', label: '有序列表', icon: ListOrdered },
-  { id: 'taskList', label: '任务列表', icon: ListCheck },
-  { id: 'table', label: '表格', icon: Table2 }
+  { id: 'heading', label: '二级标题', icon: 'heading' },
+  { id: 'bold', label: '加粗', icon: 'bold' },
+  { id: 'italic', label: '斜体', icon: 'italic' },
+  { id: 'quote', label: '引用', icon: 'quote' },
+  { id: 'link', label: '链接', icon: 'link' },
+  { id: 'image', label: '图片', icon: 'image' },
+  { id: 'code', label: '行内代码', icon: 'code' },
+  { id: 'codeBlock', label: '代码块', icon: 'code-block' },
+  { id: 'list', label: '无序列表', icon: 'list' },
+  { id: 'orderedList', label: '有序列表', icon: 'ordered-list' },
+  { id: 'taskList', label: '任务列表', icon: 'task-list' },
+  { id: 'table', label: '表格', icon: 'table' }
 ] as const;
 
 type Props = {
@@ -97,6 +86,7 @@ const cloneFrontmatter = (value: AdminEssayEditorValues): AdminEssayEditorValues
   title: value.title,
   description: value.description,
   date: value.date,
+  publishedAt: value.publishedAt,
   tagsText: value.tagsText,
   draft: value.draft,
   archive: value.archive,
@@ -469,7 +459,6 @@ $effect(() => {
     <div class="admin-editor-markdown-toolbar" role="toolbar" aria-label="Markdown 常用格式">
       {#each markdownTools as tool}
         {@const active = isToolbarToolActive(tool.id)}
-        {@const ToolIcon = tool.icon}
         <button
           class="admin-btn admin-btn--tool admin-btn--compact admin-btn--icon admin-editor-markdown-toolbar__button"
           class:is-active={active}
@@ -480,7 +469,7 @@ $effect(() => {
           disabled={busy}
           onclick={() => applyToolbarTool(tool.id)}
         >
-          <ToolIcon size={16} strokeWidth={2} aria-hidden="true" />
+          <AdminEditorIcon name={tool.icon} size={16} strokeWidth={2} />
         </button>
       {/each}
     </div>

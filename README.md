@@ -44,11 +44,11 @@
 ### 快速开始
 
 ```bash
-npm i
+npm install
 # 可重复安装（推荐 CI/排障时使用）
 # npm ci
 npm run dev
-npm run build && npm run preview
+npm run build
 ```
 
 <details>
@@ -63,32 +63,34 @@ npm run build && npm run preview
 
 ### 常用命令
 
-  - npm run dev
-  - npm run build
-  - npm run ci
-  - npm run new:bit
+  - `npm run dev`：启动本地开发服务
+  - `npm run build`：生成静态站点
+  - `npm run preview`：预览构建产物
+  - `npm run new:bit`：创建一条 bits 草稿
 
 <details>
-  <summary>检查与回归命令说明</summary>
+  <summary>维护者校验</summary>
 
-推荐按场景选择：
+以下命令用于维护主题本身，普通写作与部署通常不需要执行。
 
 ```bash
-# 默认回归（GitHub Actions ）
-npm run ci
+# 基础回归：Astro check、Vitest、build
+npm run verify
 
-# 发布前手动复核绝对链接 / sitemap / RSS（需已确定正式域名）
+# Markdown 渲染契约：改动渲染链路、文章样式或代码块工具栏时执行
+npm run build
+npm run check:markdown-smoke
+
+# 发布前产物检查：需已确定正式域名
 SITE_URL=https://你的域名 npm run build
 SITE_URL=https://你的域名 npm run check:prod-artifacts
 
-# 仅在改动 Admin Console 子路由、/api/admin/** 静态边界或 dev/prod 只读边界时
+# Admin 边界检查：仅改动 /admin/** 或 /api/admin/** 时执行
 npm run check:preview-admin
-```
 
-- `npm test` 主要覆盖标签工具、Theme Console 共享校验规则，以及主题设置 `revision` 的关键纯逻辑回归。
-- `npm run ci` 是默认回归入口；`npm run ci:core` 仅作为维护者兼容别名保留。
-- 未设置 SITE_URL 时，npm run build 仍可构建，但 SEO 相关输出会不完整。
-- 发布前如需核对绝对链接产物，设置真实 SITE_URL 后运行 npm run check:prod-artifacts。
+# 生产依赖审计：发布前或依赖变更时执行
+npm run audit:prod
+```
 </details>
 
 
@@ -170,7 +172,7 @@ npm run dev
 | `/admin/images/` | 可用 | 图片资源浏览与路径辅助 |
 | `/admin/checks/` | 可用 | 结构化诊断与发布前自检 |
 | `/admin/data/` | 可用 | settings 快照导出 / dry-run 导入 / 确认写入 |
-| `/admin/content/` | 开发中 | 文章管理与可视化写作占位页 |
+| `/admin/content/` | 可用 | 内容列表、随笔正文编辑、絮语 frontmatter 编辑与小记只读查看 |
 
 
 <details>
@@ -198,12 +200,10 @@ Theme Console 主要面向**站点级**和**页面级**配置，支持内容：
 
 #### 生产环境说明
 
-- Theme Console / Data Console 仅在本地开发环境提供写入能力；Content Console 当前仍为占位页
-- `/admin/content/` 与 `/admin/content/:collection/` 当前仅显示开发中提示，不开放 collection 概览、详情与 frontmatter 写入界面
-- 生产构建保持静态站点输出；`/admin/` 可按 Theme 设置显示只读公开 Overview 或关闭态文案，生产态不展示后台 tabs，其他后台子路由仅保留本地开发提示
-- `/api/admin/settings/` 仅供本地开发使用，生产环境不要依赖该接口
-- `/api/admin/content/entry/` 仅供本地开发写入内容 frontmatter，生产环境不要依赖该接口
-- `/api/admin/data/settings/` 仅供本地开发导出 settings 快照，生产环境不要依赖该接口
+- Admin Console 的写入能力仅面向本地开发环境，包括主题配置、内容编辑、settings 导入导出和随笔正文图片上传
+- `/admin/content/` 提供内容列表、筛选、搜索与行级操作；开发态编辑页支持随笔 frontmatter + 正文编辑与服务端预览，絮语支持 frontmatter 编辑，小记保持只读
+- 生产构建保持静态站点输出；`/admin/` 可按 Theme 设置显示只读公开 Overview 或关闭态文案，其他后台子路由仅保留本地开发提示
+- `/api/admin/**` 仅作为本地开发接口使用，不属于生产环境公开 API
 
 #### 兼容迁移（已 fork 用户）
 
@@ -224,6 +224,10 @@ Theme Console 主要面向**站点级**和**页面级**配置，支持内容：
 主要路由：
 - 列表页：`/archive/`、`/essay/`、`/bits/`、`/memo/`、`/about/`
 - 详情页规范入口：/archive/[slug]（/essay/[slug] 保留兼容跳转）
+
+草稿规则：
+- `essay` / `bits` 的 `draft: true` 在本地开发可见，生产构建、RSS 与公开列表会过滤
+- `memo` 是单页内容；`src/content/memo/index.md` 不应标记为草稿，生产构建会终止以避免 `/memo/` 输出空页
 
 ### 图片资源
 

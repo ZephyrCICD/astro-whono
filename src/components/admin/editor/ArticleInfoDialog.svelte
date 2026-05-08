@@ -1,7 +1,7 @@
 <script lang="ts">
-import X from '@lucide/svelte/icons/x';
 import type { AdminEssayEditorValues } from '../../../lib/admin-console/content-shared';
 import { createModalDialogFocusController } from '../../../scripts/admin-console/modal-dialog-focus';
+import AdminEditorIcon from './AdminEditorIcon.svelte';
 import FrontmatterSidebar from './FrontmatterSidebar.svelte';
 
 type AdminContentIssue = {
@@ -106,7 +106,7 @@ $effect(() => {
           disabled={disabled}
           onclick={closeDialog}
         >
-          <X size={16} strokeWidth={2} aria-hidden="true" />
+          <AdminEditorIcon name="close" size={16} strokeWidth={2} />
         </button>
       </header>
       <div class="admin-modal__body">
