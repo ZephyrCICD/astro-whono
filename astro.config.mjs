@@ -8,6 +8,13 @@ import remarkCallout from './src/plugins/remark-callout.mjs';
 import shikiToolbar from './src/plugins/shiki-toolbar.mjs';
 import { site, hasSiteUrl } from './site.config.mjs';
 
+const normalizeSiteBase = (value) => {
+  const normalized = value.trim().replace(/^\/+|\/+$/g, '');
+  return normalized ? `/${normalized}` : undefined;
+};
+
+const siteBase = normalizeSiteBase(process.env.SITE_BASE ?? '');
+
 const getSchemaAttrs = (tagName) => {
   const attrs = defaultSchema.attributes?.[tagName];
   return Array.isArray(attrs) ? attrs : [];
@@ -133,6 +140,7 @@ const sanitizeSchema = {
 export default defineConfig({
   // Required for RSS generation. Prefer SITE_URL; fallback keeps build passing.
   site: site.url,
+  ...(siteBase ? { base: siteBase } : {}),
   // DEV 使用 server output 允许 Theme Console 的 /api/admin/settings/ 处理读写；
   // 构建阶段回到 static，让 /admin/ 保持只读提示，并避免把该路径当作生产公开 API。
   output: process.env.NODE_ENV === 'production' ? 'static' : 'server',

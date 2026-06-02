@@ -28,6 +28,18 @@ const NEXT_LINK_PATTERN = /<a class="prev-next__link prev-next__link--next"[^>]*
 
 export const runProductionArtifactCheck = async (options = {}) => {
   const siteUrl = options.siteUrl ?? resolveRequiredSiteUrl();
+  const sitePathPrefix = new URL(`${siteUrl}/`).pathname.replace(/\/+$/, '').replace(/^\/+/, '');
+  const stripSitePathPrefix = (pathname) => {
+    const normalizedPath = pathname.replace(/\/+$/, '').replace(/^\/+/, '');
+
+    if (!sitePathPrefix) return normalizedPath;
+    if (normalizedPath === sitePathPrefix) return '';
+    if (normalizedPath.startsWith(`${sitePathPrefix}/`)) {
+      return normalizedPath.slice(sitePathPrefix.length + 1);
+    }
+
+    return normalizedPath;
+  };
 
   const requiredArtifacts = [
     'dist/sitemap-index.xml',
@@ -85,7 +97,7 @@ export const runProductionArtifactCheck = async (options = {}) => {
     sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g),
     (match) => match[1].trim()
   ).filter(Boolean);
-  const leakedEssayDetail = sitemapLocs.find((loc) => /^\/essay\/[^/]+\/$/.test(new URL(loc).pathname));
+  const leakedEssayDetail = sitemapLocs.find((loc) => /^essay\/[^/]+$/.test(stripSitePathPrefix(new URL(loc).pathname)));
   expect(!leakedEssayDetail, `Essay compatibility redirect leaked into sitemap: ${leakedEssayDetail}`);
 
   const aboutHtml = readText('dist/about/index.html');
@@ -207,7 +219,7 @@ export const runProductionArtifactCheck = async (options = {}) => {
 
   const normalizeArchiveDetailPath = (href) => {
     const url = new URL(href);
-    const normalizedPath = url.pathname.replace(/\/+$/, '').replace(/^\/+/, '');
+    const normalizedPath = stripSitePathPrefix(url.pathname);
     expect(
       normalizedPath.startsWith('archive/') && normalizedPath.split('/').length >= 2,
       `Archive RSS item did not resolve to an /archive/{slug}/ detail page: ${href}`

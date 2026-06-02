@@ -146,6 +146,7 @@ If sanitizer or markdown plugin behavior changes, update both `astro.config.mjs`
 - RSS endpoints include `/rss.xml`, `/archive/rss.xml`, and `/essay/rss.xml`.
 - `SITE_URL` should be set in production without a trailing slash. It controls canonical URLs, Open Graph URLs, RSS links, sitemap generation, and the `Sitemap:` line in `robots.txt`.
 - Without `SITE_URL`, builds still pass by using `https://example.invalid`, but SEO artifacts are intentionally incomplete.
+- GitHub Pages project-site deployment uses `.github/workflows/github-pages.yml`, `SITE_URL=https://zephyrcicd.github.io/astro-whono`, and `SITE_BASE=/astro-whono`. Vercel should leave `SITE_BASE` unset unless it is also deployed under a subpath.
 
 ## Admin Console
 
