@@ -3,7 +3,7 @@
   "description": "Zephyr Dev Log",
   "defaultLocale": "zh-CN",
   "footer": {
-    "startYear": 2025,
+    "startYear": 2024,
     "showCurrentYear": true,
     "copyright": "Power by ZephyrCICD"
   },
