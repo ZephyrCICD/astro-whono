@@ -25,7 +25,7 @@ export const readSmokeFixtureHtml = async (label) => {
   } catch {
     console.error(`${label} failed: unable to read build output.`);
     console.error(`Expected file: ${smokeFixturePath}`);
-    console.error('Run `npm run build` first.');
+    console.error('Run `pnpm run build` first.');
     process.exit(1);
   }
 };

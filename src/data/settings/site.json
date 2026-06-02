@@ -1,20 +1,20 @@
 {
-  "title": "Astro Themes by Whono",
-  "description": "一个 Astro 主题的展示站：轻量、可维护、可复用。",
+  "title": "Zephyr CI/CD",
+  "description": "Zephyr Dev Log",
   "defaultLocale": "zh-CN",
   "footer": {
     "startYear": 2025,
     "showCurrentYear": true,
-    "copyright": "Whono · Theme Demo · by cxro"
+    "copyright": "Power by ZephyrCICD"
   },
   "adminOverview": {
     "publicVisible": true,
     "hiddenMessage": "作者暂未公开此页面。"
   },
   "socialLinks": {
-    "github": "https://github.com/cxro/astro-whono",
-    "x": "https://twitter.com/yourname",
-    "email": "Whono@linux.do",
+    "github": "https://github.com/zephyrcicd",
+    "x": "https://twitter.com/zephyrcicd",
+    "email": null,
     "presetOrder": {
       "github": 1,
       "x": 2,

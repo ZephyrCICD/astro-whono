@@ -365,7 +365,7 @@ export const createFormCodec = ({
     const yearRange = showCurrentYear && startYear && startYear < footerStartYearMax
       ? `${startYear}-${footerStartYearMax}`
       : String(startYear || footerStartYearMax);
-    const copyright = inputSiteFooterCopyright.value.trim() || 'Whono · Theme Demo · by cxro';
+    const copyright = inputSiteFooterCopyright.value.trim() || 'Power by ZephyrCICD';
     return `页脚预览：© ${yearRange} ${copyright}`;
   };
 

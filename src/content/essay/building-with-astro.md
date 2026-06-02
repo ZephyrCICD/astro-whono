@@ -5,6 +5,8 @@ date: 2026-01-10
 badge: Astro
 tags: ["Astro", "Web Development", "Tutorial"]
 draft: false
+archive: true
+listed: false
 ---
 
 Astro is a modern web framework built for content-heavy sites that need strong performance without giving up developer ergonomics.

@@ -8,8 +8,8 @@ import { getEntry, render } from 'astro:content';
 import { getThemeSettings } from '../../lib/theme-settings';
 
 const prod = import.meta.env.PROD;
-const DEFAULT_MEMO_TITLE = '生活小记';
-const DEFAULT_MEMO_SUBTITLE = '整理一些值得留存的片刻与回忆。';
+const DEFAULT_MEMO_TITLE = '小记';
+const DEFAULT_MEMO_SUBTITLE = '迁移与整理。';
 
 const entry = await getEntry('memo', 'index');
 if (!entry) {
@@ -50,7 +50,7 @@ for (const h of headings) {
 
 <BaseLayout
   title={memoTitle}
-  description="整理一些值得留存的片刻与回忆。"
+  description="记录博客迁移、站点整理和日常想法。"
   bodyClass="memo-page immersive-page"
 >
   <div class="page-header reader-exit-anchor">
@@ -70,10 +70,7 @@ for (const h of headings) {
   </div>
 
   <div class="intro">
-    时间流经我们，如同风穿过回廊。
-    <br />总有一些瞬间，携带着特别的气息或光亮，短暂停留后便消散。
-    <br />有些感受，无法被镜头承载，有些记忆难以被影像收藏。
-    <br />也许，为瞬间的感受留下一份文字备份，正是抵抗遗忘最温柔却最有效的方式。
+    记录博客迁移、站点整理，以及偶尔需要留下来的简短想法。
   </div>
 
   <nav class="memo-toc" aria-label="目录">

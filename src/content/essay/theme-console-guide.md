@@ -1,10 +1,12 @@
 ---
 title: Theme Console 配置指南
 description: 说明 astro-whono 本地 Theme Console 在开发环境下的适用范围、页面分组、配置落点与保存机制。
-badge: 指南
+badge: Guide
 date: 2026-04-26
-tags: [ "Theme Console", "指南"]
+tags: [ "Theme Console", "Guide"]
 draft: false
+archive: true
+listed: false
 ---
 
 astro-whono 提供一个本地 Theme Console，用于在开发环境中集中管理主题级配置。

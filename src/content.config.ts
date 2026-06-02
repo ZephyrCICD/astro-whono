@@ -16,6 +16,8 @@ const essayBaseFields = {
   tags: z.array(z.string()).default([]),
   draft: z.boolean().default(false),
   archive: z.boolean().default(true),
+  // false keeps the essay routable and archived, but hides it from home/essay lists.
+  listed: z.boolean().default(true),
   publishedAt: z.unknown().optional(),
   // Optional custom permalink. If present, it overrides the default public slug
   // derived from the entry id / path.

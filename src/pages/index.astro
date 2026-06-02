@@ -16,6 +16,7 @@ const withBase = createWithBase(base);
 const {
   settings: {
     home: { introLead, introMore, introMoreLinks, showIntroLead, showIntroMore, heroPresetId, heroImageSrc, heroImageAlt },
+    site: { title: siteTitle },
     ui: { articleMeta }
   }
 } = getThemeSettings();
@@ -624,7 +625,7 @@ body[data-reading="immersive"] .reader-toggle .icon-book-open {
 
 <BaseLayout bodyClass={homeBodyClass} deferGlobalStyles={true}>
   <style slot="head" is:inline set:html={homeHeadCriticalCss}></style>
-  <h1 class="sr-only">Astro Themes by Whono</h1>
+  <h1 class="sr-only">{siteTitle}</h1>
   {
     shouldShowHero && (
       <div class="hero">

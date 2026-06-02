@@ -142,7 +142,7 @@ const buildChecksHref = (category: AdminChecksFilterValue): string => {
             </div>
 
             <p class="admin-checks-toolbar__hint">
-              注：提交前仍建议执行 <code>npm run check</code>、<code>npm test</code>、<code>npm run build</code>。
+              注：提交前仍建议执行 <code>pnpm run check</code>、<code>pnpm test</code>、<code>pnpm run build</code>。
             </p>
           </header>
 
@@ -255,7 +255,7 @@ const buildChecksHref = (category: AdminChecksFilterValue): string => {
         </section>
       ) : (
         <AdminReadonlyNotice>
-          若需运行后台诊断，请在本地运行 <code translate="no">npm run dev</code>；发布前仍以终端检查为准。
+          若需运行后台诊断，请在本地运行 <code translate="no">pnpm run dev</code>；发布前仍以终端检查为准。
         </AdminReadonlyNotice>
       )
     }

@@ -48,4 +48,4 @@ const template = `---\ndraft: true\ndate: ${date}\ntags: []\nimages: []\n---\n\n
 fs.writeFileSync(filepath, template, 'utf8');
 
 console.log(`Created: ${filepath}`);
-console.log('Next: edit the file and run `npm run dev`');
+console.log('Next: edit the file and run `pnpm run dev`');

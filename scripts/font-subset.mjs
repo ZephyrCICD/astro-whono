@@ -30,7 +30,7 @@ const NOTO_OUTPUTS = {
 const failMissingPyftsubset = (details) => {
   console.error('[font:subset] Missing required tool / 缺少必需命令');
   console.error('- command: pyftsubset');
-  console.error('- required by: npm run font:subset / npm run font:build');
+  console.error('- required by: pnpm run font:subset / pnpm run font:build');
   console.error('- install: python -m pip install fonttools brotli zopfli');
   console.error('- verify: pyftsubset --help');
   console.error('- note: ensure the Python Scripts directory is available on PATH / 请确保 Python Scripts 目录已加入 PATH');
@@ -71,7 +71,7 @@ const failMissingSource = ({ name, filename, expectedPath }) => {
 
 if (!existsSync(CHARSET_PATH)) {
   console.error(`missing charset file: ${CHARSET_PATH}`);
-  console.error('run: npm run font:charset');
+  console.error('run: pnpm run font:charset');
   process.exit(1);
 }
 

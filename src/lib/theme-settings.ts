@@ -362,7 +362,7 @@ const THEME_SETTINGS_INVALID_MESSAGE =
   '检测到 settings JSON 配置文件损坏，Theme Console 已停止读取并禁止保存，请先修复对应文件后再重试';
 
 const LEGACY_INTRO_LEAD =
-  '这是一个开源写作主题与示例内容库:包含 随笔/essay、小记/memo、归档/archive 与 絮语/bits，使用与配置请见 README 。';
+  '记录技术实践、工具使用和站点迁移整理。';
 const LEGACY_INTRO_MORE = '更多文章请访问';
 const LEGACY_ESSAY_TITLE = '随笔';
 const LEGACY_ARCHIVE_TITLE = '归档';
@@ -370,19 +370,19 @@ const LEGACY_ESSAY_SUBTITLE = '随笔与杂记';
 const LEGACY_BITS_TITLE = '絮语';
 const LEGACY_BITS_SUBTITLE = '生活不只是长篇';
 const LEGACY_ABOUT_TITLE = '关于';
-const LEGACY_QUOTE = 'A minimal Astro theme\nfor essays, notes, and docs.\nDesigned for reading,\nopen-source.';
+const LEGACY_QUOTE = 'Every note a drop, together a sea.';
 const LEGACY_FOOTER_START_YEAR = 2025;
 const LEGACY_FOOTER_SHOW_CURRENT_YEAR = true;
-const LEGACY_FOOTER_COPYRIGHT = 'Whono · Theme Demo · by cxro';
+const LEGACY_FOOTER_COPYRIGHT = 'Power by ZephyrCICD';
 const DEFAULT_PRESET_SOCIAL_ORDER: SiteSocialPresetOrder = {
   github: 1,
   x: 2,
   email: 3
 };
 const LEGACY_SOCIAL_LINKS: SiteSocialLinks = {
-  github: 'https://github.com/cxro/astro-whono',
-  x: 'https://twitter.com/yourname',
-  email: 'Whono@linux.do',
+  github: 'https://github.com/zephyrcicd',
+  x: 'https://twitter.com/zephyrcicd',
+  email: null,
   presetOrder: { ...DEFAULT_PRESET_SOCIAL_ORDER },
   custom: [],
   resolvedSocialItems: []
@@ -424,8 +424,8 @@ const cloneThemeSettingsReadDiagnostics = (
 ): ThemeSettingsReadDiagnostic[] => diagnostics.map((diagnostic) => ({ ...diagnostic }));
 
 const DEFAULT_SITE: SiteSettings = {
-  title: 'Whono',
-  description: '一个 Astro 主题的展示站：轻量、可维护、可复用。',
+  title: 'Zephyr CI/CD',
+  description: 'Zephyr Dev Log',
   defaultLocale: 'zh-CN',
   footer: {
     startYear: LEGACY_FOOTER_START_YEAR,
@@ -447,7 +447,7 @@ const DEFAULT_SITE: SiteSettings = {
 };
 
 const DEFAULT_SHELL: ShellSettings = {
-  brandTitle: 'Whono',
+  brandTitle: 'Zephyr CI/CD',
   quote: LEGACY_QUOTE,
   nav: cloneNavItems(LEGACY_NAV)
 };
@@ -476,7 +476,7 @@ const DEFAULT_PAGE: PageSettings = {
     title: LEGACY_BITS_TITLE,
     subtitle: LEGACY_BITS_SUBTITLE,
     defaultAuthor: {
-      name: 'Whono',
+      name: 'Zephyr',
       avatar: 'author/avatar.webp'
     }
   },

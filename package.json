@@ -1,17 +1,18 @@
 {
-  "name": "astro-whono",
+  "name": "zephyr-cicd-blog",
   "version": "0.4.1",
   "private": true,
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cxro/astro-whono.git"
+    "url": "https://github.com/ZephyrCICD/astro-whono.git"
   },
   "bugs": {
-    "url": "https://github.com/cxro/astro-whono/issues"
+    "url": "https://github.com/ZephyrCICD/astro-whono/issues"
   },
-  "homepage": "https://astro.whono.me",
+  "homepage": "https://blog.zephyrcicd.com",
   "type": "module",
+  "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -21,15 +22,15 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run --config ./vitest.config.ts",
-    "audit:prod": "npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org",
+    "audit:prod": "pnpm audit --prod --audit-level high --registry=https://registry.npmjs.org",
     "check:markdown-smoke": "node ./scripts/check-markdown-smoke.mjs",
     "check:prod-artifacts": "node ./scripts/check-production-artifacts.mjs",
     "check:preview-admin": "node ./scripts/check-preview-admin-boundary.mjs",
-    "ci:core": "npm run check && npm run test && npm run build && npm run check:markdown-smoke",
-    "ci": "npm run ci:core",
+    "ci:core": "pnpm run check && pnpm run test && pnpm run build && pnpm run check:markdown-smoke",
+    "ci": "pnpm run ci:core",
     "font:charset": "node ./scripts/font-charset.mjs",
     "font:subset": "node ./scripts/font-subset.mjs",
-    "font:build": "npm run font:charset && npm run font:subset",
+    "font:build": "pnpm run font:charset && pnpm run font:subset",
     "new:bit": "node ./scripts/new-bit.mjs"
   },
   "dependencies": {
@@ -50,18 +51,18 @@
     "unist-util-visit": "^5.0.0",
     "vitest": "^4.1.2"
   },
-  "overrides": {
-    "ajv": "8.18.0",
-    "anymatch": {
-      "picomatch": "2.3.2"
-    },
-    "fast-xml-parser": "5.7.0",
-    "h3": "1.15.9",
-    "picomatch": "4.0.4",
-    "postcss": "8.5.12",
-    "rollup": "4.59.0",
-    "volar-service-yaml": "0.0.70",
-    "yaml": "2.8.3",
-    "yaml-language-server": "1.20.0"
+  "pnpm": {
+    "overrides": {
+      "ajv": "8.18.0",
+      "anymatch>picomatch": "2.3.2",
+      "fast-xml-parser": "5.7.0",
+      "h3": "1.15.9",
+      "picomatch": "4.0.4",
+      "postcss": "8.5.12",
+      "rollup": "4.59.0",
+      "volar-service-yaml": "0.0.70",
+      "yaml": "2.8.3",
+      "yaml-language-server": "1.20.0"
+    }
   }
 }
