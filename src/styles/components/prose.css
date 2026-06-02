@@ -13,6 +13,33 @@
   margin: 0 auto;
 }
 
+.prose .mermaid-diagram {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--code-content-bg);
+}
+
+.prose .mermaid-diagram__canvas {
+  min-width: min-content;
+}
+
+.prose .mermaid-diagram svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.prose .mermaid-diagram.is-error {
+  white-space: pre;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
 @media (max-width: 900px) {
   .prose img {
     max-width: 92%;

@@ -145,8 +145,10 @@ const shouldShowMetaLine = articleMetaSettings.showDate
 
   <script>
     import { initArticleLightbox, initCodeCopyButtons } from '../scripts/lightbox';
+    import { initMermaidDiagrams } from '../scripts/mermaid';
 
     initCodeCopyButtons();
+    initMermaidDiagrams(document.querySelector('.prose') ?? document);
     initArticleLightbox({
       dialogId: 'lightbox',
       containerSelector: '.prose',
