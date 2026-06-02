@@ -37,7 +37,9 @@
     "@astrojs/rss": "^4.0.18",
     "@astrojs/sitemap": "^3.7.2",
     "@lucide/astro": "^1.8.0",
-    "astro": "^6.3.2"
+    "astro": "^6.3.2",
+    "sharp": "0.34.5",
+    "yaml": "2.8.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.8",
@@ -52,6 +54,10 @@
     "vitest": "^4.1.2"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ],
     "overrides": {
       "ajv": "8.18.0",
       "anymatch>picomatch": "2.3.2",
