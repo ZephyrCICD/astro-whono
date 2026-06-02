@@ -8,6 +8,6 @@
   "showIntroLead": false,
   "showIntroMore": true,
   "heroPresetId": "default",
-  "heroImageSrc": null,
+  "heroImageSrc": "/images/archive/demo-archive-02.webp",
   "heroImageAlt": "Zephyr CI/CD hero image"
 }
