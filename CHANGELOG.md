@@ -7,6 +7,9 @@ The format is based on Keep a Changelog, and this project aims to follow Semanti
 
 ## [Unreleased]
 
+### Added
+- 主题切换新增「跟随系统」模式：站点外观可随系统浅色/深色设置自动切换（[PR #35](https://github.com/cxro/astro-whono/pull/35)，by [@ZephyrCICD](https://github.com/ZephyrCICD)）。
+
 ### Fixed
 - 修复本地后台编辑 figure 图片块时，含转义文本或富文本说明的图片可能被错误回显，以及本地图片缺失检查可能漏检的问题。
 
