@@ -215,12 +215,13 @@ a {
 }
 
 .sidebar__quote {
-  max-width: 220px;
+  max-width: calc(var(--sidebar) - 48px);
   text-align: right;
   font-family: Georgia, serif;
   font-style: italic;
   font-size: 16px;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .nav {
