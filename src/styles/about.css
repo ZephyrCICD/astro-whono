@@ -28,59 +28,6 @@
   margin-top: 32px;
 }
 
-.qa-list {
-  margin-top: 12px;
-  display: grid;
-  gap: 18px;
-}
-
-.qa-item {
-  padding: 0;
-}
-
-.qa-item > summary {
-  list-style: none;
-  cursor: pointer;
-}
-
-.qa-item > summary::-webkit-details-marker {
-  display: none;
-}
-
-.qa-question {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text);
-  font-size: 16px;
-  line-height: 1.75;
-  font-weight: 400;
-  font-family: "LXGW WenKai Lite", "Kaiti SC", "STKaiti", serif;
-}
-
-.qa-icon {
-  width: 22px;
-  height: 22px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  line-height: 1;
-  color: var(--muted);
-  flex: 0 0 22px;
-}
-
-.qa-answer {
-  margin: 12px 0 0;
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.75;
-  font-family: "LXGW WenKai Lite", "Kaiti SC", "STKaiti", serif;
-}
-
 .contact-block {
   margin-top: 12px;
 }

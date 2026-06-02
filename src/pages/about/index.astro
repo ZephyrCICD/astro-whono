@@ -72,7 +72,7 @@ const contactItems: ContactItem[] = [
     }
   </div>
   <p class="about-intro-line">
-    你好！我是 Zephyr，一名 Java 开发者。<br /><br />
+    你好！我是 Zephyr，一名开发者，平时主要写 Java，也在学习使用 Golang 和 TypeScript。<br /><br />
     开这个博客，是想给自己留一块安静的角落，把工作里遇到的坑、学到的技巧、偶尔冒出来的想法好好记下来。<br /><br />
     与其让灵光一闪就消失，不如让它们有迹可循。也许几年后回头看，会觉得这些记录像一条成长轨迹，足够让人感到开心和踏实。<br /><br />
     如果你刚好从这些笔记里获得一点灵感，那就太好了。
@@ -147,26 +147,6 @@ const contactItems: ContactItem[] = [
     </section>
     
   </div>
-
-  <h2 class="section-title about-section-title">常见问题</h2>
-  <section class="qa-list" aria-label="常见问题">
-    <details class="qa-item">
-      <summary class="qa-question"><span class="qa-icon" aria-hidden="true">Q</span>为什么我部署后会看到 SITE_URL is not set 警告？</summary>
-      <p class="qa-answer">因为没配置生产域名。未设置时会用占位域名，<code>canonical</code>/<code>og:url</code>/<code>sitemap</code>/<code>robots</code> 会不完整。部署平台里环境变量中添加 <code>SITE_URL=https://你的域名</code>，重新构建即可。</p>
-    </details>
-    <details class="qa-item">
-      <summary class="qa-question"><span class="qa-icon" aria-hidden="true">Q</span>为什么有的文章只出现在归档里？</summary>
-      <p class="qa-answer"><code>listed: false</code> 的文章会保留在归档和详情页中，但不会出现在首页、随笔列表和随笔 RSS；<code>archive: false</code> 则会从归档列表与归档 RSS 中排除。</p>
-    </details>
-    <details class="qa-item">
-      <summary class="qa-question"><span class="qa-icon" aria-hidden="true">Q</span>为什么我在 /essay/ 点开文章会跳到 /archive/.../？</summary>
-      <p class="qa-answer">项目把文章详情统一在 <code>/archive/{'{'}slug{'}'}/</code>，<code>/essay/</code> 主要作为文章流列表入口，这样可以避免重复详情路由，便于长期维护。</p>
-    </details>
-    <details class="qa-item">
-      <summary class="qa-question"><span class="qa-icon" aria-hidden="true">Q</span>这个博客主要记录什么？</summary>
-      <p class="qa-answer">主要记录技术实践、工具使用、开发经验，以及站点迁移和整理过程中的笔记。</p>
-    </details>
-  </section>
 
   {
     contactItems.length ? (

@@ -172,6 +172,27 @@ Admin Console is a local development tool, not a production CMS.
 - Keep frontend changes consistent with the existing minimal two-column writing theme unless the user explicitly asks for a broader redesign.
 - Do not reintroduce a monolithic admin stylesheet unless there is a clear reason; current structure uses shell plus route/component styles.
 
+### About Page FAQ Pattern
+
+The About page FAQ was removed during personalization because the old questions documented the upstream theme, not the personal blog. If an FAQ is needed later, add it back as an explicit About page section rather than mixing it into article content.
+
+Use native `<details>` for each question:
+
+```astro
+<h2 class="section-title about-section-title">常见问题</h2>
+<section class="qa-list" aria-label="常见问题">
+  <details class="qa-item">
+    <summary class="qa-question">
+      <span class="qa-icon" aria-hidden="true">Q</span>
+      问题标题
+    </summary>
+    <p class="qa-answer">回答内容。</p>
+  </details>
+</section>
+```
+
+Style only the About page local classes in `src/styles/about.css`: `.qa-list`, `.qa-item`, `.qa-question`, `.qa-icon`, and `.qa-answer`. Keep FAQ copy personal-site focused; do not restore upstream theme deployment/tutorial questions unless they are intentionally being documented as site-maintenance notes.
+
 ## Fonts
 
 - The repo includes subset WOFF2 font files for Noto Serif SC and LXGW WenKai Lite.
