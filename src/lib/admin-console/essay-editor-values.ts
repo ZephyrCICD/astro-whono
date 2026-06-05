@@ -1,4 +1,4 @@
-import type { AdminEssayEditorValues } from './content-shared';
+import type { AdminEssayEditorValues } from './content-editor-payload';
 
 export const cloneFrontmatter = (value: AdminEssayEditorValues): AdminEssayEditorValues => ({
   title: value.title,

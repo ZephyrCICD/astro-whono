@@ -2,13 +2,15 @@
 import AdminContentEditPage from '../../../../../components/admin/AdminContentEditPage.astro';
 import {
   ADMIN_CONTENT_WRITE_COLLECTION_KEYS,
-  getAdminContentReadOnlyReason,
   isAdminContentCollectionKey,
   isAdminContentWriteCollectionKey,
-  listAdminCollectionSourceFiles,
-  resolveAdminContentEntryIdFromSourcePath,
   type AdminContentWriteCollectionKey
-} from '../../../../../lib/admin-console/content-shared';
+} from '../../../../../lib/admin-console/content-collections';
+import {
+  getAdminContentReadOnlyReason,
+  listAdminCollectionSourceFiles,
+  resolveAdminContentEntryIdFromSourcePath
+} from '../../../../../lib/admin-console/content-entry-source';
 
 export const getStaticPaths = async () => {
   if (!import.meta.env.DEV) {

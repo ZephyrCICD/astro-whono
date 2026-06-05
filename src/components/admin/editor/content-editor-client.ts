@@ -1,10 +1,10 @@
 import type {
   AdminBitsEditorValues,
-  AdminContentCollectionKey,
   AdminContentEditorValues,
   AdminEssayEditorValues,
   AdminMemoEditorValues
-} from '../../../lib/admin-console/content-shared';
+} from '../../../lib/admin-console/content-editor-payload';
+import type { AdminContentCollectionKey } from '../../../lib/admin-console/content-collections';
 import type { AdminContentDeletableCollectionKey } from '../../../lib/admin-console/content-delete-contract';
 import {
   getPayloadDeleteResult,

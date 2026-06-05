@@ -1,13 +1,13 @@
 import type { AdminContentWriteCollectionKey } from '../../lib/admin-console/content-collections';
 import { getAdminContentCollectionCapability } from '../../lib/admin-console/content-collections';
 import { getAdminContentEntryEditHref } from '../../lib/admin-console/content-routes';
+import type { AdminAboutEditorPayload } from '../../lib/admin-console/content-about-contract';
 import {
-  type AdminAboutEditorPayload,
   type AdminBitsEditorPayload,
   type AdminContentWorkspaceEditorPayload,
   type AdminEssayEditorPayload,
   type AdminMemoEditorPayload
-} from '../../lib/admin-console/content-shared';
+} from '../../lib/admin-console/content-editor-payload';
 import type { BitsCardAuthorInput } from '../../lib/bits-card-view-model';
 import {
   loadAdminContentSourceIndex,

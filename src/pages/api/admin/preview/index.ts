@@ -6,13 +6,15 @@ import {
 } from '../../../../lib/admin-console/admin-api';
 import {
   ADMIN_CONTENT_COLLECTION_KEYS,
-  AdminContentEntryResolutionError,
-  getAdminContentReadOnlyReason,
   isAdminContentCollectionKey,
   isAdminContentWriteCollectionKey,
-  type AdminContentValidationIssue
-} from '../../../../lib/admin-console/content-shared';
-import type { AdminContentWriteCollectionKey } from '../../../../lib/admin-console/content-shared';
+  type AdminContentWriteCollectionKey
+} from '../../../../lib/admin-console/content-collections';
+import type { AdminContentValidationIssue } from '../../../../lib/admin-console/content-entry-contract';
+import {
+  AdminContentEntryResolutionError,
+  getAdminContentReadOnlyReason
+} from '../../../../lib/admin-console/content-entry-source';
 import { renderAdminMarkdownPreview } from '../../../../lib/admin-console/preview';
 
 type PreviewInput = {

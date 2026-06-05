@@ -28,9 +28,9 @@ import remarkCallout from '../../plugins/remark-callout.mjs';
 import { sanitizeSchema } from '../../plugins/sanitize-schema.mjs';
 import shikiToolbar from '../../plugins/shiki-toolbar.mjs';
 import {
-  resolveAdminContentEntrySourcePath,
-  type AdminContentCollectionKey
-} from './content-shared';
+  resolveAdminContentEntrySourcePath
+} from './content-entry-source';
+import type { AdminContentCollectionKey } from './content-collections';
 import { extractMarkdownOutline } from './editor-outline';
 
 export const ADMIN_PREVIEW_CODE_HIGHLIGHT_MODE = 'shiki-rehype' as const;

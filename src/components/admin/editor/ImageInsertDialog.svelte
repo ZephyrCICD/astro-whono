@@ -1,7 +1,7 @@
 <script lang="ts">
 import { createModalDialogFocusController } from '../../../scripts/admin-console/modal-dialog-focus';
 import AdminEditorIcon from './AdminEditorIcon.svelte';
-import type { AdminContentBodyImageUploadCollectionKey } from '../../../lib/admin-console/content-shared';
+import type { AdminContentBodyImageUploadCollectionKey } from '../../../lib/admin-console/content-collections';
 import { uploadContentEditorImage, type EditorImageUploadResult } from './editor-image-upload';
 import {
   REMOTE_IMAGE_URL_ERROR,

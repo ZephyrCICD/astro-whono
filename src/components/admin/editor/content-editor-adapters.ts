@@ -1,10 +1,10 @@
 import type {
   AdminBitsEditorValues,
   AdminContentWorkspaceEditorValues,
-  AdminContentWriteCollectionKey,
   AdminEssayEditorValues,
   AdminMemoEditorValues
-} from '../../../lib/admin-console/content-shared';
+} from '../../../lib/admin-console/content-editor-payload';
+import type { AdminContentWriteCollectionKey } from '../../../lib/admin-console/content-collections';
 import type { AdminAboutEditorValues } from '../../../lib/admin-console/content-about-contract';
 import { getAdminContentCollectionCapability } from '../../../lib/admin-console/content-collections';
 import {

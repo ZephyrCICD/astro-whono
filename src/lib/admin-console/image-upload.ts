@@ -4,7 +4,7 @@ import path from 'node:path';
 import {
   AdminContentEntryResolutionError,
   resolveAdminContentEntrySourcePath
-} from './content-shared';
+} from './content-entry-source';
 import {
   invalidateAdminImageCaches,
   readAdminLocalImageInspectionMeta

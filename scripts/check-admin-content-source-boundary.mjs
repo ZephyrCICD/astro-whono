@@ -4,7 +4,10 @@ import path from 'node:path';
 const projectRoot = path.resolve('.');
 const checkedFiles = [
   'src/lib/admin-console/content.ts',
-  'src/lib/admin-console/content-source-index.ts'
+  'src/lib/admin-console/content-source-index.ts',
+  'src/lib/admin-console/content-entry-source.ts',
+  'src/lib/admin-console/content-editor-payload.ts',
+  'src/lib/admin-console/content-write-plan.ts'
 ];
 
 const forbiddenPatterns = [

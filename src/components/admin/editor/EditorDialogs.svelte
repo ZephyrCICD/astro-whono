@@ -1,9 +1,11 @@
 <script lang="ts">
 import type {
-  AdminContentWorkspaceEditorValues,
   AdminContentBodyImageUploadCollectionKey,
   AdminContentWriteCollectionKey
-} from '../../../lib/admin-console/content-shared';
+} from '../../../lib/admin-console/content-collections';
+import type {
+  AdminContentWorkspaceEditorValues
+} from '../../../lib/admin-console/content-editor-payload';
 import type { AdminContentIssue } from './content-editor-client';
 import ArticleInfoDialog from './ArticleInfoDialog.svelte';
 import GalleryInsertDialog from './GalleryInsertDialog.svelte';

@@ -1,10 +1,12 @@
 import { access, mkdir, rename } from 'node:fs/promises';
 import path from 'node:path';
 import {
-  resolveAdminContentEntrySourcePath,
+  resolveAdminContentEntrySourcePath
+} from './content-entry-source';
+import {
+  getAdminContentCollectionCapability,
   type AdminContentCollectionKey
-} from './content-shared';
-import { getAdminContentCollectionCapability } from './content-collections';
+} from './content-collections';
 import type { AdminContentDeletableCollectionKey } from './content-delete-contract';
 import { invalidateAdminImageCaches } from './image-shared';
 

@@ -1,4 +1,4 @@
-import type { AdminEssayEditorValues } from '../../../lib/admin-console/content-shared';
+import type { AdminEssayEditorValues } from '../../../lib/admin-console/content-editor-payload';
 import type { EditorOutlineEssaySourceItem } from './editor-outline-helpers';
 
 type BaseEssayEditorShellProps = {

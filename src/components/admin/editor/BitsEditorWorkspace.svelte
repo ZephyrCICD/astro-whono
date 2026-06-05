@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from 'svelte';
-import type { AdminBitsEditorValues } from '../../../lib/admin-console/content-shared';
+import type { AdminBitsEditorValues } from '../../../lib/admin-console/content-editor-payload';
 import {
   buildBitsCardViewModel,
   type BitsCardAuthorInput

@@ -2,11 +2,13 @@ import type { APIRoute } from 'astro';
 import { ADMIN_JSON_HEADERS } from '../../../../lib/admin-console/admin-api';
 import {
   ADMIN_CONTENT_COLLECTION_KEYS,
-  AdminContentEntryResolutionError,
   getAdminContentCollectionCapability,
   isAdminContentCollectionKey,
   isAdminContentExportableCollectionKey
-} from '../../../../lib/admin-console/content-shared';
+} from '../../../../lib/admin-console/content-collections';
+import {
+  AdminContentEntryResolutionError
+} from '../../../../lib/admin-console/content-entry-source';
 import {
   createAdminContentSourceDownloadHeaders,
   readAdminContentSourceDownload

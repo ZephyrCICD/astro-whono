@@ -1,4 +1,4 @@
-import type { AdminMemoEditorValues } from '../../../lib/admin-console/content-shared';
+import type { AdminMemoEditorValues } from '../../../lib/admin-console/content-editor-payload';
 
 export type MemoEditorIslandProps = {
   endpoint: string;

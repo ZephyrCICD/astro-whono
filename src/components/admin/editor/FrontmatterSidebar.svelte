@@ -1,8 +1,10 @@
 <script lang="ts">
 import type {
-  AdminContentWorkspaceEditorValues,
   AdminContentCollectionKey
-} from '../../../lib/admin-console/content-shared';
+} from '../../../lib/admin-console/content-collections';
+import type {
+  AdminContentWorkspaceEditorValues
+} from '../../../lib/admin-console/content-editor-payload';
 import AdminEditorIcon from './AdminEditorIcon.svelte';
 import {
   isBitsEditorValues,

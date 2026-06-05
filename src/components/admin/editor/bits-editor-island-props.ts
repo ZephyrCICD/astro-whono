@@ -1,4 +1,4 @@
-import type { AdminBitsEditorValues } from '../../../lib/admin-console/content-shared';
+import type { AdminBitsEditorValues } from '../../../lib/admin-console/content-editor-payload';
 import type { BitsCardAuthorInput } from '../../../lib/bits-card-view-model';
 import type { EditorOutlineListSourceItem } from './editor-outline-helpers';
 

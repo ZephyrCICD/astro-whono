@@ -4,7 +4,7 @@ import {
   isRecord,
   parseResponseBody
 } from '../../../scripts/admin-content/entry-transport';
-import type { AdminContentImageUploadCollectionKey } from '../../../lib/admin-console/content-shared';
+import type { AdminContentImageUploadCollectionKey } from '../../../lib/admin-console/content-collections';
 
 export type EditorImageUploadResult = {
   src: string;

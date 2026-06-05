@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { AdminBitsEditorValues } from '../../../lib/admin-console/content-shared';
+import type { AdminBitsEditorValues } from '../../../lib/admin-console/content-editor-payload';
 import type { AdminContentIssue } from './content-editor-client';
 import AdminEditorIcon from './AdminEditorIcon.svelte';
 import {

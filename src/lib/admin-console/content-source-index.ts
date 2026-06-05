@@ -26,7 +26,7 @@ import {
   readAdminSourceFrontmatterRecord,
   resolveAdminContentEntryIdFromSourcePath,
   toAdminContentRelativeProjectPath
-} from './content-shared';
+} from './content-entry-source';
 import {
   parseMarkdownFrontmatterDocument,
   splitMarkdownFrontmatter

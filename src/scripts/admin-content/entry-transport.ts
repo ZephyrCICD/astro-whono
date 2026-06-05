@@ -2,13 +2,13 @@ import type {
   AdminBitsEditorPayload,
   AdminBitsEditorValues,
   AdminContentEditorPayload,
-  AdminContentValidationIssue,
-  AdminContentEntryWriteCollectionKey,
   AdminEssayEditorPayload,
   AdminEssayEditorValues,
   AdminMemoEditorPayload,
   AdminMemoEditorValues
-} from '../../lib/admin-console/content-shared';
+} from '../../lib/admin-console/content-editor-payload';
+import type { AdminContentEntryWriteCollectionKey } from '../../lib/admin-console/content-collections';
+import type { AdminContentValidationIssue } from '../../lib/admin-console/content-entry-contract';
 import type {
   AdminAboutEditorPayload,
   AdminAboutEditorValues

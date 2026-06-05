@@ -1,10 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
-  resolveAdminContentEntryLegacySourcePath,
+  resolveAdminContentEntryLegacySourcePath
+} from './content-entry-source';
+import {
+  getAdminContentFixedPageCapability,
   type AdminContentCollectionKey
-} from './content-shared';
-import { getAdminContentFixedPageCapability } from './content-collections';
+} from './content-collections';
 
 export type AdminContentSourceDownload = {
   collection: AdminContentCollectionKey;

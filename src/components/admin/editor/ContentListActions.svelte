@@ -3,7 +3,7 @@ import { onMount, tick } from 'svelte';
 import type {
   AdminContentEditorPayload,
   AdminEssayEditorValues
-} from '../../../lib/admin-console/content-shared';
+} from '../../../lib/admin-console/content-editor-payload';
 import {
   cloneFrontmatter,
   isEqualFrontmatter

@@ -6,11 +6,15 @@ import {
 } from '../../../../lib/admin-console/admin-api';
 import {
   ADMIN_CONTENT_COLLECTION_KEYS,
-  AdminContentEntryResolutionError,
-  isAdminContentCollectionKey,
-  readAdminContentEntryEditorPayload,
-  type AdminContentValidationIssue
-} from '../../../../lib/admin-console/content-shared';
+  isAdminContentCollectionKey
+} from '../../../../lib/admin-console/content-collections';
+import type { AdminContentValidationIssue } from '../../../../lib/admin-console/content-entry-contract';
+import {
+  AdminContentEntryResolutionError
+} from '../../../../lib/admin-console/content-entry-source';
+import {
+  readAdminContentEntryEditorPayload
+} from '../../../../lib/admin-console/content-editor-payload';
 import {
   getAdminContentDeleteUnsupportedReason,
   moveAdminContentEntryToTrash

@@ -1,11 +1,13 @@
 import type {
   AdminContentWriteCollectionKey
-} from '../../lib/admin-console/content-shared';
+} from '../../lib/admin-console/content-collections';
+import type {
+  AdminContentEditorPayload,
+  AdminContentWorkspaceEditorPayload
+} from '../../lib/admin-console/content-editor-payload';
 import {
-  readAdminContentEntryEditorPayload,
-  type AdminContentEditorPayload,
-  type AdminContentWorkspaceEditorPayload
-} from '../../lib/admin-console/content-shared';
+  readAdminContentEntryEditorPayload
+} from '../../lib/admin-console/content-editor-payload';
 import {
   getAdminContentEditorPageRegistration,
   loadAdminContentEditorOutlines,

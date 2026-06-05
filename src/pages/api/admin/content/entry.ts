@@ -8,18 +8,24 @@ import {
 } from '../../../../lib/admin-console/admin-api';
 import {
   ADMIN_CONTENT_COLLECTION_KEYS,
-  AdminContentEntryResolutionError,
-  applyAdminContentWritePlan,
-  buildAdminContentEntryEditorPayloadFromState,
-  buildAdminContentWritePlanFromState,
-  getAdminContentReadOnlyReason,
   isAdminContentCollectionKey,
   isAdminContentEntryWriteCollectionKey,
-  loadAdminContentSourceState,
-  readAdminContentEntryEditorPayload,
-  type AdminContentValidationIssue,
   type AdminContentEntryWriteCollectionKey
-} from '../../../../lib/admin-console/content-shared';
+} from '../../../../lib/admin-console/content-collections';
+import type { AdminContentValidationIssue } from '../../../../lib/admin-console/content-entry-contract';
+import {
+  AdminContentEntryResolutionError,
+  getAdminContentReadOnlyReason,
+  loadAdminContentSourceState
+} from '../../../../lib/admin-console/content-entry-source';
+import {
+  buildAdminContentEntryEditorPayloadFromState,
+  readAdminContentEntryEditorPayload
+} from '../../../../lib/admin-console/content-editor-payload';
+import {
+  applyAdminContentWritePlan,
+  buildAdminContentWritePlanFromState
+} from '../../../../lib/admin-console/content-write-plan';
 import { withAdminContentWriteLock } from '../../../../lib/admin-console/content-write-lock';
 
 type WriteInput = {

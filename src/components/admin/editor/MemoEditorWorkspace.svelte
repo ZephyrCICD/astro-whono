@@ -2,7 +2,7 @@
 import { onMount, tick } from 'svelte';
 import { containsMarkdownMath } from '../../../lib/markdown-math';
 import { ensureMarkdownMathStylesheet } from '../../../lib/markdown-math-styles';
-import type { AdminMemoEditorValues } from '../../../lib/admin-console/content-shared';
+import type { AdminMemoEditorValues } from '../../../lib/admin-console/content-editor-payload';
 import { applyMemoHeadingNumbers } from '../../../scripts/memo-heading-numbers';
 import {
   ADMIN_EDITOR_DEFAULTS_STORAGE_KEY,

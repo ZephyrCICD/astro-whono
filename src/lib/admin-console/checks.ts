@@ -18,9 +18,11 @@ import {
 import {
   listAdminCollectionSourceFiles,
   readAdminSourceFrontmatterRecord,
-  resolveAdminContentEntryIdFromSourcePath,
+  resolveAdminContentEntryIdFromSourcePath
+} from './content-entry-source';
+import {
   type AdminContentCollectionKey
-} from './content-shared';
+} from './content-collections';
 import { getAdminContentEntryListHref } from './content-routes';
 import { normalizeAdminBitsImageSource } from './image-shared';
 
