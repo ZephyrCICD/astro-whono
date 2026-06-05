@@ -84,6 +84,13 @@ type AdminWritePlan = {
   bodyText?: string;
 };
 
+type FrontmatterDiffField = {
+  field: string;
+  path: readonly string[];
+  currentValue: unknown;
+  nextValue: unknown;
+};
+
 const getRequiredStringField = (
   input: Record<string, unknown>,
   field: string,
@@ -196,14 +203,6 @@ const parseAdminBitsEditorInput = (
   };
 
   return issues.length > 0 ? { issues } : { values, issues };
-};
-
-const validateAdminMemoEditorInput = (input: unknown): AdminContentValidationIssue[] => {
-  if (!isRecord(input)) {
-    return [createIssue('frontmatter', 'frontmatter 必须是对象')];
-  }
-
-  return [];
 };
 
 const resolveDefaultPublicEntryId = (sourceEntryId: string): string => {
@@ -592,6 +591,25 @@ const buildBitsCurrentFrontmatter = (state: AdminContentSourceState): AdminBitsC
 const isEqualJsonValue = (left: unknown, right: unknown): boolean =>
   JSON.stringify(left) === JSON.stringify(right);
 
+const buildFrontmatterDiff = (
+  fieldMatrix: readonly FrontmatterDiffField[]
+): Pick<AdminWritePlan, 'changedFields' | 'patches'> => {
+  const changedFields: string[] = [];
+  const patches: FrontmatterPatch[] = [];
+
+  for (const field of fieldMatrix) {
+    if (isEqualJsonValue(field.currentValue, field.nextValue)) continue;
+    changedFields.push(field.field);
+    patches.push(
+      field.nextValue === undefined
+        ? { path: field.path, action: 'delete' }
+        : { path: field.path, value: field.nextValue, action: 'set' }
+    );
+  }
+
+  return { changedFields, patches };
+};
+
 const buildEssayWritePlan = async (
   state: AdminContentSourceState,
   values: AdminEssayEditorValues,
@@ -632,12 +650,7 @@ const buildEssayWritePlan = async (
     }
   }
 
-  const fieldMatrix: Array<{
-    field: string;
-    path: readonly string[];
-    currentValue: unknown;
-    nextValue: unknown;
-  }> = [
+  const fieldMatrix: FrontmatterDiffField[] = [
     { field: 'title', path: ['title'], currentValue: current.title, nextValue: next.frontmatter.title },
     { field: 'description', path: ['description'], currentValue: current.description, nextValue: next.frontmatter.description },
     { field: 'date', path: ['date'], currentValue: current.date, nextValue: next.frontmatter.date },
@@ -650,18 +663,7 @@ const buildEssayWritePlan = async (
     { field: 'badge', path: ['badge'], currentValue: current.badge, nextValue: next.frontmatter.badge }
   ];
 
-  const changedFields: string[] = [];
-  const patches: FrontmatterPatch[] = [];
-
-  for (const field of fieldMatrix) {
-    if (isEqualJsonValue(field.currentValue, field.nextValue)) continue;
-    changedFields.push(field.field);
-    patches.push(
-      field.nextValue === undefined
-        ? { path: field.path, action: 'delete' }
-        : { path: field.path, value: field.nextValue, action: 'set' }
-    );
-  }
+  const { changedFields, patches } = buildFrontmatterDiff(fieldMatrix);
 
   if (bodyInput !== undefined && bodyInput !== state.bodyText) {
     changedFields.push('body');
@@ -686,12 +688,7 @@ const buildBitsWritePlan = (
   }
 
   const current = buildBitsCurrentFrontmatter(state);
-  const fieldMatrix: Array<{
-    field: string;
-    path: readonly string[];
-    currentValue: unknown;
-    nextValue: unknown;
-  }> = [
+  const fieldMatrix: FrontmatterDiffField[] = [
     { field: 'title', path: ['title'], currentValue: current.title, nextValue: next.frontmatter.title },
     { field: 'description', path: ['description'], currentValue: current.description, nextValue: next.frontmatter.description },
     { field: 'date', path: ['date'], currentValue: current.date, nextValue: next.frontmatter.date },
@@ -701,18 +698,7 @@ const buildBitsWritePlan = (
     { field: 'images', path: ['images'], currentValue: current.images, nextValue: next.frontmatter.images }
   ];
 
-  const changedFields: string[] = [];
-  const patches: FrontmatterPatch[] = [];
-
-  for (const field of fieldMatrix) {
-    if (isEqualJsonValue(field.currentValue, field.nextValue)) continue;
-    changedFields.push(field.field);
-    patches.push(
-      field.nextValue === undefined
-        ? { path: field.path, action: 'delete' }
-        : { path: field.path, value: field.nextValue, action: 'set' }
-    );
-  }
+  const { changedFields, patches } = buildFrontmatterDiff(fieldMatrix);
 
   if (bodyInput !== undefined && bodyInput !== state.bodyText) {
     changedFields.push('body');
@@ -812,16 +798,6 @@ export const buildAdminContentWritePlanFromState = async (
     return {
       state,
       ...buildAdminAboutWritePlan(state, bodyInput)
-    };
-  }
-
-  const memoIssues = validateAdminMemoEditorInput(frontmatterInput);
-  if (memoIssues.length > 0) {
-    return {
-      state,
-      issues: memoIssues,
-      changedFields: [],
-      patches: []
     };
   }
 

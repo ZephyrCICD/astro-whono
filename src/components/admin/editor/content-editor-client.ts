@@ -1,8 +1,7 @@
 import type {
   AdminBitsEditorValues,
   AdminContentEditorValues,
-  AdminEssayEditorValues,
-  AdminMemoEditorValues
+  AdminEssayEditorValues
 } from '../../../lib/admin-console/content-editor-payload';
 import type { AdminContentCollectionKey } from '../../../lib/admin-console/content-collections';
 import type { AdminContentDeletableCollectionKey } from '../../../lib/admin-console/content-delete-contract';
@@ -62,8 +61,7 @@ export type ContentEditorSaveInput = ContentEditorSaveBaseInput & (
     }
   | {
       collection: 'memo';
-      frontmatter: AdminMemoEditorValues;
-      body?: string;
+      body: string;
     }
   | {
       collection: 'about';
@@ -126,7 +124,7 @@ const buildContentWriteRequestBody = (input: ContentEditorSaveInput): Record<str
     revision: input.revision
   };
 
-  if (input.collection !== 'about') {
+  if (input.collection === 'essay' || input.collection === 'bits') {
     requestBody.frontmatter = input.frontmatter;
   }
   if ('body' in input) {

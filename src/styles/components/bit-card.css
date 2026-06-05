@@ -9,6 +9,8 @@
   margin: 16px 0;
   background: var(--panel);
   scroll-margin-top: 24px;
+  font-family: var(--font-readable);
+  line-height: 1.75;
 }
 
 @supports (background: color-mix(in srgb, #000 50%, #fff 50%)) {

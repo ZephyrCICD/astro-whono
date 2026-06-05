@@ -2,7 +2,6 @@
 import { onMount, tick } from 'svelte';
 import { containsMarkdownMath } from '../../../lib/markdown-math';
 import { ensureMarkdownMathStylesheet } from '../../../lib/markdown-math-styles';
-import type { AdminMemoEditorValues } from '../../../lib/admin-console/content-editor-payload';
 import { applyMemoHeadingNumbers } from '../../../scripts/memo-heading-numbers';
 import {
   ADMIN_EDITOR_DEFAULTS_STORAGE_KEY,
@@ -18,10 +17,7 @@ import {
   type AdminContentIssue,
   type AdminContentWriteResult
 } from './content-editor-client';
-import {
-  getContentEditorAdapter,
-  isMemoEditorValues
-} from './content-editor-adapters';
+import { getContentEditorAdapter } from './content-editor-adapters';
 import EditorFooterActions from './EditorFooterActions.svelte';
 import EditorTopControls from './EditorTopControls.svelte';
 import EditorWorkspace from './EditorWorkspace.svelte';
@@ -76,9 +72,9 @@ import type { MarkdownToolbarCommand } from './markdown-tools';
 import { createEditorScrollSyncController } from './editor-scroll-sync';
 import { createMarkdownCommandDispatcher } from './editor-markdown-command-dispatcher';
 import { createEditorPreviewRequestGuard } from './editor-preview-request-guard';
+import { FIXED_PAGE_EDITOR_COPY } from './fixed-page-editor-copy';
 import type { MemoEditorIslandProps } from './memo-editor-island-props';
 
-const LEAVE_CONFIRM_MESSAGE = '当前小记尚未保存，确认离开此页面？';
 const PAGE_ACTIONS_HOST_SELECTOR = '[data-admin-editor-page-actions-host]';
 const OUTLINE_PANEL_ID = 'admin-memo-editor-outline-panel';
 const SYNTAX_PANEL_ID = 'admin-memo-editor-syntax-panel';
@@ -92,22 +88,15 @@ let {
   returnHref,
   entryId,
   revision,
-  initialFrontmatter,
   initialBody
 }: MemoEditorIslandProps = $props();
 
 const editorAdapter = getContentEditorAdapter('memo');
-const collection = editorAdapter.collection;
+const collection = 'memo' as const;
 const exportHref = $derived(buildContentExportHref(exportEndpoint, collection, entryId));
-
-const cloneMemoValues = (values: AdminMemoEditorValues): AdminMemoEditorValues => {
-  const cloned = editorAdapter.cloneValues(values);
-  return isMemoEditorValues(cloned) ? cloned : { ...values };
-};
 
 const createInitialSnapshot = () => ({
   revision,
-  frontmatter: cloneMemoValues(initialFrontmatter),
   body: normalizeEditorBodyValue(initialBody)
 });
 
@@ -115,9 +104,7 @@ const initialSnapshot = createInitialSnapshot();
 
 let topActionsEl = $state<HTMLDivElement | null>(null);
 let currentRevision = $state(initialSnapshot.revision);
-let baselineFrontmatter = $state(cloneMemoValues(initialSnapshot.frontmatter));
 let baselineBody = $state(initialSnapshot.body);
-let frontmatter = $state(cloneMemoValues(initialSnapshot.frontmatter));
 let body = $state(initialSnapshot.body);
 let busy = $state(false);
 let statusState = $state<StatusState>('idle');
@@ -357,11 +344,11 @@ const closeImageInsert = () => {
 };
 
 const openGalleryInsert = () => {
-  setStatus('warn', '小记正文暂不提供图片画廊');
+  setStatus('warn', FIXED_PAGE_EDITOR_COPY.unsupportedGalleryInsert);
 };
 
 const handleGalleryEditRequest = () => {
-  setStatus('warn', '小记正文暂不提供图片画廊');
+  setStatus('warn', FIXED_PAGE_EDITOR_COPY.unsupportedGalleryInsert);
 };
 
 const setBodyScrollElement = (element: HTMLElement | null) => {
@@ -433,7 +420,6 @@ const abortActivePreviewRequest = (invalidate = false) => {
 };
 
 const resetToBaseline = () => {
-  frontmatter = cloneMemoValues(baselineFrontmatter);
   body = baselineBody;
   clearWriteFeedback();
   setStatus('idle', '');
@@ -454,19 +440,15 @@ const handleActionMenuDownload = (event: MouseEvent) => {
   closeActionMenu(event.currentTarget);
 };
 
-const commitLatestValues = (latestValues: AdminMemoEditorValues | null, latestBody: string | null) => {
-  const nextValues = cloneMemoValues(latestValues ?? frontmatter);
+const commitLatestBody = (latestBody: string | null) => {
   const nextBody = latestBody === null ? body : normalizeEditorBodyValue(latestBody);
-  frontmatter = cloneMemoValues(nextValues);
-  baselineFrontmatter = cloneMemoValues(nextValues);
   body = nextBody;
   baselineBody = nextBody;
 };
 
-const applyLatestBaseline = (latestValues: AdminMemoEditorValues | null, latestBody: string | null) => {
-  if (!isMemoEditorValues(latestValues) || latestBody === null) return false;
+const applyLatestBodyBaseline = (latestBody: string | null) => {
+  if (latestBody === null) return false;
 
-  baselineFrontmatter = cloneMemoValues(latestValues);
   baselineBody = normalizeEditorBodyValue(latestBody);
   return true;
 };
@@ -474,7 +456,7 @@ const applyLatestBaseline = (latestValues: AdminMemoEditorValues | null, latestB
 const requestContentWrite = async () => {
   busy = true;
   clearWriteFeedback();
-  setStatus('loading', '正在保存小记');
+  setStatus('loading', FIXED_PAGE_EDITOR_COPY.saving);
 
   try {
     const saveOutcome = await saveContentEntry({
@@ -482,7 +464,6 @@ const requestContentWrite = async () => {
       collection,
       entryId,
       revision: currentRevision,
-      frontmatter,
       body
     });
 
@@ -492,11 +473,8 @@ const requestContentWrite = async () => {
       issues = saveOutcome.issues;
       const nextErrors = saveOutcome.errors.length > 0
         ? saveOutcome.errors
-        : ['保存失败，请检查当前小记与磁盘状态'];
-      if (saveOutcome.status === 409 && applyLatestBaseline(
-        isMemoEditorValues(saveOutcome.latestValues) ? saveOutcome.latestValues : null,
-        saveOutcome.latestBody
-      )) {
+        : [FIXED_PAGE_EDITOR_COPY.saveFallbackError];
+      if (saveOutcome.status === 409 && applyLatestBodyBaseline(saveOutcome.latestBody)) {
         if (saveOutcome.revision) currentRevision = saveOutcome.revision;
         errors = [
           ...nextErrors,
@@ -507,7 +485,7 @@ const requestContentWrite = async () => {
       }
 
       errors = nextErrors;
-      setStatus(saveOutcome.status === 409 ? 'warn' : 'error', saveOutcome.status === 409 ? '检测到外部更新' : '写入失败');
+      setStatus(saveOutcome.status === 409 ? 'warn' : 'error', saveOutcome.status === 409 ? '检测到外部更新' : '保存失败');
       return;
     }
 
@@ -519,8 +497,8 @@ const requestContentWrite = async () => {
     }
 
     writeResult = result;
-    commitLatestValues(isMemoEditorValues(saveOutcome.latestValues) ? saveOutcome.latestValues : null, saveOutcome.latestBody);
-    setStatus(result.changed ? 'ok' : 'ready', result.changed ? '小记已保存' : '当前没有变更');
+    commitLatestBody(saveOutcome.latestBody);
+    setStatus(result.changed ? 'ok' : 'ready', result.changed ? FIXED_PAGE_EDITOR_COPY.saved : '当前没有变更');
   } catch {
     errors = ['保存请求失败，请稍后重试'];
     setStatus('error', '保存请求失败');
@@ -698,7 +676,7 @@ onMount(() => {
     detailsMenuSelectors: ADMIN_EDITOR_DETAILS_MENU_SELECTORS,
     navigationGuard: {
       isDirty: () => dirty,
-      message: LEAVE_CONFIRM_MESSAGE,
+      message: FIXED_PAGE_EDITOR_COPY.leaveConfirm,
       onBlocked: () => {
         setStatus('warn', '请先保存或还原');
       }
@@ -768,9 +746,9 @@ onMount(() => {
     {dirty}
     {returnHref}
     {exportHref}
-    actionLabel="小记操作"
-    moreLabel="更多小记操作"
-    saveLabel="保存小记"
+    actionLabel={FIXED_PAGE_EDITOR_COPY.actionLabel}
+    moreLabel={FIXED_PAGE_EDITOR_COPY.moreLabel}
+    saveLabel={FIXED_PAGE_EDITOR_COPY.saveLabel}
     downloadLabel="下载源文件"
     showDelete={editorAdapter.capabilities.delete}
     onSave={requestContentWrite}
@@ -811,10 +789,10 @@ onMount(() => {
     {markdownOutlineItems}
     {outlineListItems}
     outlineListEnabled={false}
-    outlineHeadingsTabLabel="文章目录"
+    outlineHeadingsTabLabel={FIXED_PAGE_EDITOR_COPY.outlineHeadingsTabLabel}
     outlineHeadingsTabIcon="square-chart-gantt"
     outlineHeadingsEmptyText="暂无 H2/H3 标题"
-    outlinePanelLabel="文章目录"
+    outlinePanelLabel={FIXED_PAGE_EDITOR_COPY.outlinePanelLabel}
     onBodyScrollElementChange={setBodyScrollElement}
     onBodyOutlineJump={handleBodyOutlineJump}
     onImageToolRequest={handleImageToolRequest}
@@ -857,6 +835,7 @@ onMount(() => {
     {busy}
     {dirty}
     {canWriteContent}
+    saveLabel={FIXED_PAGE_EDITOR_COPY.saveLabel}
     onReset={resetToBaseline}
     onSave={requestContentWrite}
   />

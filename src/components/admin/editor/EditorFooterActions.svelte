@@ -7,6 +7,8 @@ type Props = {
   busy: boolean;
   dirty: boolean;
   canWriteContent: boolean;
+  saveLabel?: string;
+  resetLabel?: string;
   onReset: () => void;
   onSave: () => void | Promise<void>;
 };
@@ -17,6 +19,8 @@ let {
   busy,
   dirty,
   canWriteContent,
+  saveLabel = '保存内容',
+  resetLabel = '还原',
   onReset,
   onSave
 }: Props = $props();
@@ -32,10 +36,10 @@ let {
   </div>
   <div class="admin-content-actions">
     <button class="admin-btn admin-btn--ghost admin-btn--compact" type="button" onclick={onReset} disabled={busy || !dirty}>
-      还原
+      {resetLabel}
     </button>
     <button class="admin-btn admin-btn--secondary admin-btn--compact" type="button" onclick={() => void onSave()} disabled={!canWriteContent}>
-      保存内容
+      {saveLabel}
     </button>
   </div>
 </div>

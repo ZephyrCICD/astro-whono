@@ -66,6 +66,61 @@ describe('content editor client', () => {
     });
   });
 
+  it('sends body-only payloads for memo saves', async () => {
+    const requested = {
+      body: null as unknown
+    };
+    const fetchImpl = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+      requested.body = JSON.parse(String(init?.body ?? '{}')) as unknown;
+      return new Response(JSON.stringify({
+        ok: true,
+        result: {
+          changed: true,
+          written: true,
+          changedFields: ['body'],
+          relativePath: 'src/content/memo/index.md'
+        },
+        payload: {
+          collection: 'memo',
+          entryId: 'index',
+          publicEntryId: 'index',
+          defaultPublicSlug: 'index',
+          revision: 'next-rev',
+          relativePath: 'src/content/memo/index.md',
+          writable: true,
+          readonlyReason: null,
+          bodyText: 'Memo body',
+          values: {
+            title: 'Memo',
+            subtitle: '',
+            date: '',
+            draft: false,
+            slug: ''
+          }
+        }
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }) as typeof fetch;
+
+    await saveContentEntry({
+      endpoint: '/api/admin/content/entry/',
+      collection: 'memo',
+      entryId: 'index',
+      revision: 'rev',
+      body: 'Memo body',
+      fetchImpl
+    });
+
+    expect(requested.body).toEqual({
+      collection: 'memo',
+      entryId: 'index',
+      revision: 'rev',
+      body: 'Memo body'
+    });
+  });
+
   it('keeps dry-run as a URL flag instead of changing the save payload', async () => {
     const requested = {
       url: '',

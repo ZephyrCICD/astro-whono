@@ -89,7 +89,6 @@ describe('admin content fixed-page write contract', () => {
         collection: 'memo',
         entryId: 'index',
         revision: current.revision,
-        frontmatter: {},
         body: nextBody
       }),
       url: new URL('http://127.0.0.1:4321/api/admin/content/entry')
@@ -119,7 +118,6 @@ describe('admin content fixed-page write contract', () => {
         collection: 'memo',
         entryId: 'index',
         revision: current.revision,
-        frontmatter: current.values,
         body: '![missing](./assets/missing.webp)\n'
       }),
       url: new URL('http://127.0.0.1:4321/api/admin/content/entry')
@@ -163,7 +161,6 @@ describe('admin content fixed-page write contract', () => {
         collection: 'memo',
         entryId: 'index',
         revision: current.revision,
-        frontmatter: current.values,
         body: 'local memo body\n'
       }),
       url: new URL('http://127.0.0.1:4321/api/admin/content/entry')
@@ -211,38 +208,6 @@ describe('admin content fixed-page write contract', () => {
     expect(payload.payload.collection).toBe('about');
     expect(payload.payload.values).toEqual({});
     expect(payload.payload.bodyText).toBe('\nexternal about body\n');
-  });
-
-  it('builds write plans from the caller-provided source state instead of re-reading files', async () => {
-    const {
-      buildAdminContentWritePlanFromState,
-      loadAdminContentSourceState,
-      readAdminContentEntryEditorPayload
-    } = await import('../src/lib/admin-console/content-shared');
-    const current = await readAdminContentEntryEditorPayload('about', 'index');
-    if (current.collection !== 'about') throw new Error('expected about payload');
-    const state = await loadAdminContentSourceState('about', 'index');
-
-    await writeFile(
-      path.join(getTempRoot(), 'src', 'content', 'about', 'index.md'),
-      [
-        '---',
-        '---',
-        '',
-        'external during plan body',
-        ''
-      ].join('\n'),
-      'utf8'
-    );
-
-    const plan = await buildAdminContentWritePlanFromState(
-      state,
-      undefined,
-      'local about body\n'
-    );
-
-    expect(plan.state.revision).toBe(current.revision);
-    expect(plan.changedFields).toEqual(['body']);
   });
 
 });

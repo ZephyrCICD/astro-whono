@@ -116,13 +116,6 @@ describe('admin content entry payload contract', () => {
         collection: 'memo',
         entryId: 'extra',
         revision: 'stale',
-        frontmatter: {
-          title: 'Extra Memo',
-          subtitle: '',
-          date: '',
-          draft: false,
-          slug: ''
-        },
         body: 'updated extra memo body'
       }),
       url: new URL('http://127.0.0.1:4321/api/admin/content/entry')
@@ -161,7 +154,6 @@ describe('admin content entry payload contract', () => {
         collection: 'memo',
         entryId: 'index.mdx',
         revision: 'stale',
-        frontmatter: {},
         body: 'updated mdx memo body'
       }),
       url: new URL('http://127.0.0.1:4321/api/admin/content/entry')
@@ -204,7 +196,7 @@ describe('admin content entry payload contract', () => {
         message: '不支持的 content collection'
       },
       {
-        body: { collection: 'memo', entryId: 'index', revision: null, frontmatter: {} },
+        body: { collection: 'memo', entryId: 'index', revision: null, body: 'memo body' },
         status: 400,
         issuePath: 'revision',
         message: '请求体缺少 revision'
@@ -232,6 +224,12 @@ describe('admin content entry payload contract', () => {
         status: 400,
         issuePath: 'body',
         message: 'about 保存请求缺少 body 字段'
+      },
+      {
+        body: { collection: 'memo', entryId: 'index', revision: 'stale' },
+        status: 400,
+        issuePath: 'body',
+        message: 'memo 保存请求缺少 body 字段'
       },
       {
         body: { collection: 'essay', entryId: 'demo', revision: 'stale', frontmatter: {}, body: 42 },

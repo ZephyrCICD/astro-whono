@@ -7,7 +7,7 @@
 
 ## 朋友们
 
-:::friend{name="Astro" url="https://astro.build/" avatar="https://astro.build/favicon.svg"}
+:::friend{name="Astro" url="https://astro.build/" avatar="https://cdn.nodeimage.com/i/LAW2Al4JZrPhfTs7ObHbisPLGwWuR6x5.webp"}
 用于构建高性能内容网站的前端框架
 :::
 

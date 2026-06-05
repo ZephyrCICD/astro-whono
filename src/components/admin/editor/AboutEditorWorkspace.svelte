@@ -70,9 +70,9 @@ import type { MarkdownToolbarCommand } from './markdown-tools';
 import { createEditorScrollSyncController } from './editor-scroll-sync';
 import { createMarkdownCommandDispatcher } from './editor-markdown-command-dispatcher';
 import { createEditorPreviewRequestGuard } from './editor-preview-request-guard';
+import { FIXED_PAGE_EDITOR_COPY } from './fixed-page-editor-copy';
 import type { AboutEditorIslandProps } from './about-editor-island-props';
 
-const LEAVE_CONFIRM_MESSAGE = '当前关于页面尚未保存，确认离开此页面？';
 const PAGE_ACTIONS_HOST_SELECTOR = '[data-admin-editor-page-actions-host]';
 const OUTLINE_PANEL_ID = 'admin-about-editor-outline-panel';
 const SYNTAX_PANEL_ID = 'admin-about-editor-syntax-panel';
@@ -89,7 +89,7 @@ let {
 }: AboutEditorIslandProps = $props();
 
 const editorAdapter = getContentEditorAdapter('about');
-const collection = editorAdapter.collection;
+const collection = 'about' as const;
 const exportHref = $derived(buildContentExportHref(exportEndpoint, collection, entryId));
 
 const createInitialSnapshot = () => ({
@@ -329,15 +329,15 @@ const setOutlineTab = (tab: EditorOutlineTab) => {
 };
 
 const handleImageToolRequest = () => {
-  setStatus('warn', '关于页面正文暂不提供图片插入');
+  setStatus('warn', FIXED_PAGE_EDITOR_COPY.unsupportedImageInsert);
 };
 
 const openGalleryInsert = () => {
-  setStatus('warn', '关于页面正文暂不提供图片画廊');
+  setStatus('warn', FIXED_PAGE_EDITOR_COPY.unsupportedGalleryInsert);
 };
 
 const handleGalleryEditRequest = () => {
-  setStatus('warn', '关于页面正文暂不提供图片画廊');
+  setStatus('warn', FIXED_PAGE_EDITOR_COPY.unsupportedGalleryInsert);
 };
 
 const setBodyScrollElement = (element: HTMLElement | null) => {
@@ -425,13 +425,13 @@ const handleActionMenuDownload = (event: MouseEvent) => {
   closeActionMenu(event.currentTarget);
 };
 
-const commitLatestValues = (latestBody: string | null) => {
+const commitLatestBody = (latestBody: string | null) => {
   const nextBody = latestBody === null ? body : normalizeEditorBodyValue(latestBody);
   body = nextBody;
   baselineBody = nextBody;
 };
 
-const applyLatestBaseline = (latestBody: string | null) => {
+const applyLatestBodyBaseline = (latestBody: string | null) => {
   if (latestBody === null) return false;
 
   baselineBody = normalizeEditorBodyValue(latestBody);
@@ -441,7 +441,7 @@ const applyLatestBaseline = (latestBody: string | null) => {
 const requestContentWrite = async () => {
   busy = true;
   clearWriteFeedback();
-  setStatus('loading', '正在保存关于页面');
+  setStatus('loading', FIXED_PAGE_EDITOR_COPY.saving);
 
   try {
     const saveOutcome = await saveContentEntry({
@@ -458,8 +458,8 @@ const requestContentWrite = async () => {
       issues = saveOutcome.issues;
       const nextErrors = saveOutcome.errors.length > 0
         ? saveOutcome.errors
-        : ['保存失败，请检查当前关于页面与磁盘状态'];
-      if (saveOutcome.status === 409 && applyLatestBaseline(saveOutcome.latestBody)) {
+        : [FIXED_PAGE_EDITOR_COPY.saveFallbackError];
+      if (saveOutcome.status === 409 && applyLatestBodyBaseline(saveOutcome.latestBody)) {
         if (saveOutcome.revision) currentRevision = saveOutcome.revision;
         errors = [
           ...nextErrors,
@@ -470,7 +470,7 @@ const requestContentWrite = async () => {
       }
 
       errors = nextErrors;
-      setStatus(saveOutcome.status === 409 ? 'warn' : 'error', saveOutcome.status === 409 ? '检测到外部更新' : '写入失败');
+      setStatus(saveOutcome.status === 409 ? 'warn' : 'error', saveOutcome.status === 409 ? '检测到外部更新' : '保存失败');
       return;
     }
 
@@ -482,8 +482,8 @@ const requestContentWrite = async () => {
     }
 
     writeResult = result;
-    commitLatestValues(saveOutcome.latestBody);
-    setStatus(result.changed ? 'ok' : 'ready', result.changed ? '关于页面已保存' : '当前没有变更');
+    commitLatestBody(saveOutcome.latestBody);
+    setStatus(result.changed ? 'ok' : 'ready', result.changed ? FIXED_PAGE_EDITOR_COPY.saved : '当前没有变更');
   } catch {
     errors = ['保存请求失败，请稍后重试'];
     setStatus('error', '保存请求失败');
@@ -656,7 +656,7 @@ onMount(() => {
     detailsMenuSelectors: ADMIN_EDITOR_DETAILS_MENU_SELECTORS,
     navigationGuard: {
       isDirty: () => dirty,
-      message: LEAVE_CONFIRM_MESSAGE,
+      message: FIXED_PAGE_EDITOR_COPY.leaveConfirm,
       onBlocked: () => {
         setStatus('warn', '请先保存或还原');
       }
@@ -727,9 +727,9 @@ onMount(() => {
     {dirty}
     {returnHref}
     {exportHref}
-    actionLabel="关于页面操作"
-    moreLabel="更多关于页面操作"
-    saveLabel="保存关于页面"
+    actionLabel={FIXED_PAGE_EDITOR_COPY.actionLabel}
+    moreLabel={FIXED_PAGE_EDITOR_COPY.moreLabel}
+    saveLabel={FIXED_PAGE_EDITOR_COPY.saveLabel}
     downloadLabel="下载源文件"
     showDelete={editorAdapter.capabilities.delete}
     onSave={requestContentWrite}
@@ -770,10 +770,10 @@ onMount(() => {
     {markdownOutlineItems}
     {outlineListItems}
     outlineListEnabled={false}
-    outlineHeadingsTabLabel="正文目录"
+    outlineHeadingsTabLabel={FIXED_PAGE_EDITOR_COPY.outlineHeadingsTabLabel}
     outlineHeadingsTabIcon="square-chart-gantt"
     outlineHeadingsEmptyText="暂无 H2/H3 标题"
-    outlinePanelLabel="关于页面目录"
+    outlinePanelLabel={FIXED_PAGE_EDITOR_COPY.outlinePanelLabel}
     onBodyScrollElementChange={setBodyScrollElement}
     onBodyOutlineJump={handleBodyOutlineJump}
     onImageToolRequest={handleImageToolRequest}
@@ -794,6 +794,7 @@ onMount(() => {
     {busy}
     {dirty}
     {canWriteContent}
+    saveLabel={FIXED_PAGE_EDITOR_COPY.saveLabel}
     onReset={resetToBaseline}
     onSave={requestContentWrite}
   />

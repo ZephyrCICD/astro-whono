@@ -69,6 +69,9 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const hasOwn = (value: Record<string, unknown>, key: string): boolean =>
   Object.prototype.hasOwnProperty.call(value, key);
 
+const isFrontmatterWriteCollection = (collection: string): collection is 'essay' | 'bits' =>
+  collection === 'essay' || collection === 'bits';
+
 const extractWriteInput = (body: unknown): WriteInput => {
   if (!isRecord(body)) {
     return {
@@ -120,11 +123,17 @@ const extractWriteInput = (body: unknown): WriteInput => {
     issues.push({ path: 'body', message });
   }
 
-  if (rawCollection !== 'about' && !hasFrontmatter) {
+  if (rawCollection === 'memo' && !hasBody) {
+    const message = 'memo 保存请求缺少 body 字段';
+    errors.push(message);
+    issues.push({ path: 'body', message });
+  }
+
+  if (isFrontmatterWriteCollection(rawCollection) && !hasFrontmatter) {
     const message = '请求体缺少 frontmatter 字段';
     errors.push(message);
     issues.push({ path: 'frontmatter', message });
-  } else if (rawCollection !== 'about' && !isRecord(body.frontmatter)) {
+  } else if (isFrontmatterWriteCollection(rawCollection) && !isRecord(body.frontmatter)) {
     const message = 'frontmatter 必须是对象';
     errors.push(message);
     issues.push({ path: 'frontmatter', message });
