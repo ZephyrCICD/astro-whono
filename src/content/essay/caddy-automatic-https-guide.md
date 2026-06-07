@@ -3,6 +3,7 @@ title: "Caddy自动HTTPS配置完全指南"
 description: "详细介绍如何使用Caddy实现自动HTTPS配置和反向代理，3行代码完成SSL配置，支持HTTP/2、HTTP/3，包含高级配置和与Nginx的完整对比"
 date: 2025-11-07
 publishedAt: 2025-11-07T20:30:00+08:00
+updatedAt: 2025-11-07
 badge: Ops
 tags:
   - "Caddy"
@@ -1058,7 +1059,6 @@ example.com {
 ---
 
 **文档版本**: v1.0
-**最后更新**: 2025-11-07
 **适用版本**: Caddy 2.7+
 **官方文档**: https://caddyserver.com/docs/
 

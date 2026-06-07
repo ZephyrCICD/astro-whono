@@ -13,7 +13,8 @@ export const GET: APIRoute = async () => {
       description: entry.data.description ?? '',
       tags: entry.data.tags ?? [],
       text,
-      date: entry.data.date ? entry.data.date.toISOString() : null
+      date: entry.data.date ? entry.data.date.toISOString() : null,
+      updatedAt: entry.data.updatedAt ? entry.data.updatedAt.toISOString() : null
     };
   });
   const cacheControl = import.meta.env.DEV

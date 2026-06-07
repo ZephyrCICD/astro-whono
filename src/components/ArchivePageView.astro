@@ -98,6 +98,7 @@ const currentTagState = currentTag
           const slug = getEssaySlug(entry);
           const href = withBase(`/archive/${slug}/`);
           const tag = currentTag?.label ?? entry.data.tags?.[0];
+          const updatedAt = entry.data.updatedAt ?? null;
           return (
             <div class="archive-row" data-entry-item data-slug={slug}>
               <div class="archive-title">
@@ -108,6 +109,11 @@ const currentTagState = currentTag
                   <span class="archive-date-md">{formatMonthDayUtc(entry.data.date)}</span>
                   <span class="archive-date-full">{formatISODateUtc(entry.data.date)}</span>
                 </div>
+                {updatedAt ? (
+                  <div class="archive-updated">
+                    <time datetime={updatedAt.toISOString()}>{`更新于 ${formatISODateUtc(updatedAt)}`}</time>
+                  </div>
+                ) : null}
                 {tag ? <div class="archive-tag">#{tag}</div> : null}
               </div>
             </div>

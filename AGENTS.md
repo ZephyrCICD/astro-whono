@@ -80,6 +80,7 @@ Rules:
 
 - `date` should usually be `YYYY-MM-DD`; ISO datetimes remain supported for old content.
 - `updatedAt` is optional. Use it when an essay has meaningful revisions; it accepts `YYYY-MM-DD` or an ISO datetime and is displayed as an update date.
+- When editing an existing published essay's body or moving legacy "last updated" footer text into metadata, add or refresh `updatedAt` in frontmatter and avoid leaving duplicate visible update-date text in the body.
 - Public essay slugs must be lowercase kebab-case and unique after path flattening.
 - If `slug` is omitted, nested content paths are flattened with `/` replaced by `-`.
 - Reserved essay slugs: `page`, `tag`, `rss.xml`.

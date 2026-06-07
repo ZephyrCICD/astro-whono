@@ -292,6 +292,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+.archive-updated {
+  grid-column: 2;
+  grid-row: 2;
+  color: var(--faint);
+  font-size: 12px;
+  font-family: "LXGW WenKai Lite", "Kaiti SC", "STKaiti", serif;
+}
+
 .archive-tag {
   grid-column: 3;
   grid-row: 1;
@@ -365,6 +373,16 @@
 
   .archive-date {
     grid-column: auto;
+  }
+
+  .archive-updated {
+    grid-column: auto;
+    font-size: 12px;
+  }
+
+  .archive-updated::before {
+    content: " - ";
+    color: var(--faint);
   }
 
   .archive-date-md {

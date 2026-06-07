@@ -3,6 +3,7 @@ title: "Nginx SSL证书配置和反向代理完整指南"
 description: "详细介绍如何使用Nginx和Let's Encrypt配置SSL证书，包含三种方案对比、DNS API自动续期、Cloudflare集成等，并提供与Caddy的完整对比分析"
 date: 2025-11-07
 publishedAt: 2025-11-07T20:00:00+08:00
+updatedAt: 2025-11-07
 badge: Ops
 tags:
   - "Nginx"
@@ -1197,5 +1198,4 @@ sudo ss -tlnp | grep :8080                  # 检查后端端口
 ---
 
 **文档版本**: v2.1
-**最后更新**: 2025-11-07
 **适用版本**: Ubuntu 20.04+, Nginx 1.18+, Certbot 1.21+
