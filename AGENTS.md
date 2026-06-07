@@ -116,6 +116,18 @@ Rules:
 
 The durable Markdown rendering contract is covered by `src/test-fixtures/markdown-smoke.md` and `pnpm run check:markdown-smoke`.
 
+### Essay Embedded Images
+
+When adding images inside essay Markdown files:
+
+- Prefer colocated article images under `src/content/essay/**`, next to the Markdown file or in a small sibling folder named for the article/topic.
+- Reference article-local images with Markdown-relative paths, for example `![Alt text](./photo.webp)` for directory entries or `![Alt text](./post-assets/photo.webp)` for flat `.md` entries.
+- Use `public/images/**` only for direct-link assets that are intentionally shared across pages or should not participate in article-local organization.
+- Use remote `https://` image URLs only when the image is intentionally hosted outside the repo, such as a stable R2/custom-domain asset. Do not use temporary, demo-domain, or upstream-theme image URLs in production content.
+- Prefer compressed `webp` or `avif` files. Do not commit oversized originals when a display-sized derivative is enough for the article.
+- Every content image needs meaningful alt text. If a caption is needed, use the existing `figure.figure` / `figcaption` convention rather than inventing one-off markup.
+- For multiple related images, use the existing gallery convention (`ul.gallery > li > figure > img + figcaption?`) instead of ad hoc grid markup.
+
 Supported authoring conventions:
 
 - Callouts: `:::note[Title] ... :::`, `:::tip[...]`, `:::info[...]`, `:::warning[...]`.
