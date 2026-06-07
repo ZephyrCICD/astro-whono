@@ -23,6 +23,7 @@ This repo was forked from `astro-whono` and is being converted into a personal b
 - Keep route behavior, content schemas, and admin API boundaries explicit. Avoid hidden conventions spread across content files.
 - Use ASCII for code/config unless the existing file already uses Chinese prose or another clear non-ASCII context.
 - When adding public behavior, update the relevant README/docs only if it is still meant to survive the fork. Otherwise keep notes in `AGENTS.md` or tests.
+- Personal blog content updates target this fork/repository. Do not create or suggest pull requests back to the upstream/original author unless the user explicitly asks for that.
 
 ## Commands
 
