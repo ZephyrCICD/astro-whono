@@ -72,11 +72,13 @@ slug: optional-kebab-slug
 badge: optional
 cover: optional
 publishedAt: 2026-01-01T12:00:00+08:00
+updatedAt: 2026-01-02
 ```
 
 Rules:
 
 - `date` should usually be `YYYY-MM-DD`; ISO datetimes remain supported for old content.
+- `updatedAt` is optional. Use it when an essay has meaningful revisions; it accepts `YYYY-MM-DD` or an ISO datetime and is displayed as an update date.
 - Public essay slugs must be lowercase kebab-case and unique after path flattening.
 - If `slug` is omitted, nested content paths are flattened with `/` replaced by `-`.
 - Reserved essay slugs: `page`, `tag`, `rss.xml`.

@@ -19,6 +19,7 @@ const essayBaseFields = {
   // false keeps the essay routable and archived, but hides it from home/essay lists.
   listed: z.boolean().default(true),
   publishedAt: z.unknown().optional(),
+  updatedAt: z.unknown().optional(),
   // Optional custom permalink. If present, it overrides the default public slug
   // derived from the entry id / path.
   slug: slugRule.optional()
@@ -58,13 +59,41 @@ const essaySchema = z.object(essayShape).transform((data, ctx) => {
     return z.NEVER;
   }
 
-  const normalizedData = { ...data };
-  delete normalizedData.publishedAt;
+  const hasExplicitUpdatedAt =
+    data.updatedAt != null &&
+    !(typeof data.updatedAt === 'string' && data.updatedAt.trim() === '');
+  const updatedAtInput = data.updatedAt;
+  const updatedAtResult = hasExplicitUpdatedAt ? parseEssayDateInput(updatedAtInput) : null;
+
+  if (hasExplicitUpdatedAt && !updatedAtResult) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['updatedAt'],
+      message: 'updatedAt must be a valid YYYY-MM-DD date or ISO 8601 datetime'
+    });
+    return z.NEVER;
+  }
+
+  if (updatedAtResult && updatedAtResult.date.valueOf() < dateResult.date.valueOf()) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['updatedAt'],
+      message: 'updatedAt must not be earlier than date'
+    });
+    return z.NEVER;
+  }
+
+  const {
+    publishedAt: _publishedAt,
+    updatedAt: _updatedAt,
+    ...normalizedData
+  } = data;
 
   return {
     ...normalizedData,
     date: dateResult.date,
-    ...(publishedAt ? { publishedAt } : {})
+    ...(publishedAt ? { publishedAt } : {}),
+    ...(updatedAtResult ? { updatedAt: updatedAtResult.date } : {})
   };
 });
 
