@@ -19,6 +19,10 @@ import {
 import type { AdminContentIssue } from '../shared/content-editor-client';
 import { uploadBitsEditorImage, type EditorImageUploadResult } from '../media-insert/editor-image-upload';
 import type { StatusState } from '../shared/editor-shell-helpers';
+import {
+  getFieldDescribedBy,
+  getFieldIssueId
+} from '../shared/field-issue-a11y';
 
 type RowMetaState = {
   text: string;
@@ -51,6 +55,7 @@ const META_PREVIEW_DEBOUNCE_MS = 360;
 const IMAGE_DETAIL_PANEL_ID = 'admin-bits-image-detail-panel';
 const IMAGE_INSERT_BUTTON_ID = 'admin-bits-image-insert-button';
 const IMAGE_ISSUE_FIELDS = ['src', 'width', 'height', 'alt'] as const;
+const IMAGE_ISSUE_ID_SCOPE = 'admin-bits-image';
 const base = import.meta.env.BASE_URL ?? '/';
 
 let {
@@ -588,12 +593,13 @@ onMount(() => {
               spellcheck="false"
               aria-label={`${activeRowIsEmpty ? '插入图片' : getImageTabLabel(index)}路径`}
               aria-invalid={srcIssue ? 'true' : undefined}
+              aria-describedby={getFieldDescribedBy(IMAGE_ISSUE_ID_SCOPE, `images[${index}].src`, srcIssue)}
               placeholder="请上传图片或输入图片链接"
               disabled={rowDisabled}
               oninput={(event) => handleSourceInput(index, event.currentTarget.value)}
               onchange={() => void applyMeta(index)}
             />
-            <p class="admin-content-editor__error" hidden={!srcIssue}>{srcIssue}</p>
+            <p id={getFieldIssueId(IMAGE_ISSUE_ID_SCOPE, `images[${index}].src`)} class="admin-content-editor__error" hidden={!srcIssue}>{srcIssue}</p>
           </div>
 
           <div class="admin-content-image-row__actions" aria-label={`${activeRowIsEmpty ? '插入图片' : getImageTabLabel(index)} 操作`}>
@@ -658,6 +664,7 @@ onMount(() => {
                   type="text"
                   value={activeRow.alt}
                   aria-invalid={altIssue ? 'true' : undefined}
+                  aria-describedby={getFieldDescribedBy(IMAGE_ISSUE_ID_SCOPE, `images[${index}].alt`, altIssue)}
                   placeholder="未填写(可选)"
                   disabled={rowDisabled}
                   oninput={(event) => handleDetailInput(index, 'alt', event.currentTarget.value)}
@@ -665,7 +672,7 @@ onMount(() => {
                     if (event.key === 'Escape' && !altIssue) editingDetail = null;
                   }}
                 />
-                <p class="admin-content-editor__error" hidden={!altIssue}>{altIssue}</p>
+                <p id={getFieldIssueId(IMAGE_ISSUE_ID_SCOPE, `images[${index}].alt`)} class="admin-content-editor__error" hidden={!altIssue}>{altIssue}</p>
               </div>
             {:else}
               <button
@@ -698,6 +705,7 @@ onMount(() => {
                     inputmode="numeric"
                     value={activeRow.width}
                     aria-invalid={widthIssue ? 'true' : undefined}
+                    aria-describedby={getFieldDescribedBy(IMAGE_ISSUE_ID_SCOPE, `images[${index}].width`, widthIssue)}
                     placeholder="自动"
                     disabled={rowDisabled}
                     oninput={(event) => handleDetailInput(index, 'width', event.currentTarget.value)}
@@ -705,7 +713,7 @@ onMount(() => {
                       if (event.key === 'Escape' && !widthIssue && !heightIssue) editingDetail = null;
                     }}
                   />
-                  <p class="admin-content-editor__error" hidden={!widthIssue}>{widthIssue}</p>
+                  <p id={getFieldIssueId(IMAGE_ISSUE_ID_SCOPE, `images[${index}].width`)} class="admin-content-editor__error" hidden={!widthIssue}>{widthIssue}</p>
                 </div>
                 <span class="admin-content-image-row__dimension-separator" aria-hidden="true">×</span>
                 <div class="admin-field admin-content-image-row__field" class:is-invalid={Boolean(heightIssue)}>
@@ -717,6 +725,7 @@ onMount(() => {
                     inputmode="numeric"
                     value={activeRow.height}
                     aria-invalid={heightIssue ? 'true' : undefined}
+                    aria-describedby={getFieldDescribedBy(IMAGE_ISSUE_ID_SCOPE, `images[${index}].height`, heightIssue)}
                     placeholder="自动"
                     disabled={rowDisabled}
                     oninput={(event) => handleDetailInput(index, 'height', event.currentTarget.value)}
@@ -724,7 +733,7 @@ onMount(() => {
                       if (event.key === 'Escape' && !widthIssue && !heightIssue) editingDetail = null;
                     }}
                   />
-                  <p class="admin-content-editor__error" hidden={!heightIssue}>{heightIssue}</p>
+                  <p id={getFieldIssueId(IMAGE_ISSUE_ID_SCOPE, `images[${index}].height`)} class="admin-content-editor__error" hidden={!heightIssue}>{heightIssue}</p>
                 </div>
               </div>
             {:else}

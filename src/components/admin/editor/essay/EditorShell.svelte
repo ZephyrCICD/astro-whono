@@ -17,6 +17,7 @@ import {
   type AdminContentIssue,
   type AdminContentWriteResult
 } from '../shared/content-editor-client';
+import type { AdminEssayEditorValues } from '../../../../lib/admin-console/content-editor-payload';
 import { flattenEntryIdToSlug } from '../../../../utils/slug-rules';
 import EditorDialogs from './EditorDialogs.svelte';
 import EditorFooterActions from '../shared/EditorFooterActions.svelte';
@@ -411,6 +412,27 @@ const abortActivePreviewRequest = (invalidate = false) => {
   if (invalidate) previewBusy = false;
 };
 
+const commitLatestValues = (latestValues: AdminEssayEditorValues | null, latestBody: string | null) => {
+  const nextValues = latestValues
+    ? editorAdapter.cloneValues(latestValues)
+    : editorAdapter.cloneValues(frontmatter);
+  const nextBody = bodyEditingEnabled && latestBody !== null ? normalizeEditorBodyValue(latestBody) : body;
+  frontmatter = editorAdapter.cloneValues(nextValues);
+  baselineFrontmatter = editorAdapter.cloneValues(nextValues);
+  body = nextBody;
+  baselineBody = nextBody;
+};
+
+const applyLatestBaseline = (latestValues: AdminEssayEditorValues | null, latestBody: string | null) => {
+  if (!latestValues || (bodyEditingEnabled && latestBody === null)) return false;
+
+  baselineFrontmatter = editorAdapter.cloneValues(latestValues);
+  if (bodyEditingEnabled && latestBody !== null) {
+    baselineBody = normalizeEditorBodyValue(latestBody);
+  }
+  return true;
+};
+
 const requestContentWrite = async () => {
   busy = true;
   clearWriteFeedback();
@@ -435,8 +457,15 @@ const requestContentWrite = async () => {
       if (errors.length === 0) {
         errors = ['保存失败，检查控制台日志'];
       }
-      if (saveOutcome.status === 409) {
-        window.alert(errors[0] ?? '检测到内容文件已在外部更新，已拒绝覆盖，请刷新当前条目后再保存');
+      const latestValues = isEssayEditorValues(saveOutcome.latestValues) ? saveOutcome.latestValues : null;
+      if (saveOutcome.status === 409 && applyLatestBaseline(latestValues, saveOutcome.latestBody)) {
+        if (saveOutcome.revision) currentRevision = saveOutcome.revision;
+        errors = [
+          ...errors,
+          '已载入磁盘最新版本作为冲突基线，当前编辑内容仍保留。请核对后再次保存，或通过“还原更改”载入磁盘版本。'
+        ];
+        setStatus('warn', '检测到外部更新，草稿已保留');
+        return;
       }
       setStatus(saveOutcome.status === 409 ? 'warn' : 'error', '保存失败');
       return;
@@ -451,14 +480,7 @@ const requestContentWrite = async () => {
 
     writeResult = result;
     const latestValues = isEssayEditorValues(saveOutcome.latestValues) ? saveOutcome.latestValues : null;
-    const latestBody = saveOutcome.latestBody;
-    const nextBaseline = latestValues
-      ? editorAdapter.cloneValues(latestValues)
-      : editorAdapter.cloneValues(frontmatter);
-    frontmatter = editorAdapter.cloneValues(nextBaseline);
-    baselineFrontmatter = editorAdapter.cloneValues(nextBaseline);
-    baselineBody = bodyEditingEnabled && latestBody !== null ? normalizeEditorBodyValue(latestBody) : body;
-    body = baselineBody;
+    commitLatestValues(latestValues, saveOutcome.latestBody);
 
     const nextStatusState: StatusState = result.changed ? 'ok' : 'idle';
     const nextStatusText = result.changed ? '内容已保存' : '';

@@ -1,3 +1,5 @@
+import { createModalDialogFocusController } from '../admin-console/modal-dialog-focus';
+
 const COMMAND = 'npm run dev:clean';
 const CLEANUP_KEY = '__astroWhonoAdminEditorRecoveryCleanup';
 
@@ -86,16 +88,20 @@ const setStatus = (root: RecoveryRoot, text: string) => {
   root.status.hidden = text.length === 0;
 };
 
-const openModal = (root: RecoveryRoot) => {
+const openModal = (root: RecoveryRoot, dialogFocus: ReturnType<typeof createModalDialogFocusController>) => {
   root.modal.hidden = false;
   root.trigger.setAttribute('aria-expanded', 'true');
-  root.modal.querySelector<HTMLElement>('[data-admin-editor-recovery-copy]')?.focus({ preventScroll: true });
+  dialogFocus.focusInitial();
 };
 
-const closeModal = (root: RecoveryRoot, restoreFocus = false) => {
+const closeModal = (
+  root: RecoveryRoot,
+  dialogFocus: ReturnType<typeof createModalDialogFocusController>,
+  restoreFocus = false
+) => {
   root.modal.hidden = true;
   root.trigger.setAttribute('aria-expanded', 'false');
-  if (restoreFocus) root.trigger.focus({ preventScroll: true });
+  if (restoreFocus) dialogFocus.restoreFocus();
 };
 
 const revealRecovery = (root: RecoveryRoot) => {
@@ -128,16 +134,24 @@ export const initAdminEditorRecovery = (
   const root = getRecoveryRoot(documentRoot);
   if (!root) return undefined;
 
+  const dialogFocus = createModalDialogFocusController({
+    getDialog: () => root.modal,
+    getInitialFocus: () => root.copyButton ?? root.closeButtons[0] ?? root.reloadButton,
+    onClose: () => closeModal(root, dialogFocus, true)
+  });
+
   const handleDetected = (value: unknown) => {
     if (!isAdminEditorRecoveryError(value)) return;
     windowRef.requestAnimationFrame?.(() => {
       if (!shouldShowAdminEditorRecovery(documentRoot)) return;
       revealRecovery(root);
-      openModal(root);
+      dialogFocus.captureReturnFocus(root.trigger);
+      openModal(root, dialogFocus);
     }) ?? windowRef.setTimeout(() => {
       if (!shouldShowAdminEditorRecovery(documentRoot)) return;
       revealRecovery(root);
-      openModal(root);
+      dialogFocus.captureReturnFocus(root.trigger);
+      openModal(root, dialogFocus);
     }, 0);
   };
 
@@ -165,18 +179,20 @@ export const initAdminEditorRecovery = (
       url: getNonEmptyString(detail.componentUrl) ?? getNonEmptyString(detail.url) ?? ''
     });
   };
-  const handleTriggerClick = () => openModal(root);
+  const handleTriggerClick = () => {
+    dialogFocus.captureReturnFocus(root.trigger);
+    openModal(root, dialogFocus);
+  };
   const handleCopyClick = () => {
     void copyCommand(root);
   };
   const handleReloadClick = () => windowRef.location.reload();
   const handleKeydown = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape' || root.modal.hidden) return;
-    event.preventDefault();
-    closeModal(root, true);
+    if (root.modal.hidden) return;
+    dialogFocus.handleKeydown(event);
   };
   const closeButtonHandlers = root.closeButtons.map((button) => {
-    const handler = () => closeModal(root, button.dataset.adminEditorRecoveryClose === 'restore');
+    const handler = () => closeModal(root, dialogFocus, button.dataset.adminEditorRecoveryClose === 'restore');
     return { button, handler };
   });
 

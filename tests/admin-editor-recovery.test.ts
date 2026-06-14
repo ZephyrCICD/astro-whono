@@ -10,6 +10,8 @@ describe('admin editor recovery', () => {
     class TestElement {
       hidden = true;
       textContent = '';
+      disabled = false;
+      tabIndex = 0;
       dataset: Record<string, string> = {};
       listeners = new Map<string, EventListener>();
       attributes = new Map<string, string>();
@@ -35,6 +37,21 @@ describe('admin editor recovery', () => {
         return null;
       }
 
+      querySelectorAll(selector: string): TestElement[] {
+        if (selector.includes('button')) {
+          return [elements.copyButton, elements.reloadButton, elements.closeButton];
+        }
+        return [];
+      }
+
+      closest() {
+        return null;
+      }
+
+      contains() {
+        return true;
+      }
+
       setAttribute(name: string, value: string) {
         this.attributes.set(name, value);
       }
@@ -58,6 +75,9 @@ describe('admin editor recovery', () => {
       status: new TestElement('[data-admin-editor-recovery-status]'),
       shell: shellMounted ? new TestElement('.admin-editor-shell') : null
     };
+    elements.copyButton.hidden = false;
+    elements.reloadButton.hidden = false;
+    elements.closeButton.hidden = false;
     elements.closeButton.dataset.adminEditorRecoveryClose = 'restore';
     elements.trigger.setAttribute('aria-expanded', 'false');
 
@@ -71,9 +91,11 @@ describe('admin editor recovery', () => {
       ['.admin-editor-shell', elements.shell]
     ]);
 
-    return {
+    const documentRoot = {
       elements,
       listeners: new Map<string, EventListener>(),
+      activeElement: null,
+      contains: () => true,
       setShellMounted: (mounted: boolean) => {
         lookup.set('.admin-editor-shell', mounted ? new TestElement('.admin-editor-shell') : null);
       },
@@ -100,12 +122,20 @@ describe('admin editor recovery', () => {
       listeners: Map<string, EventListener>;
       setShellMounted: (mounted: boolean) => void;
     };
+
+    vi.stubGlobal('HTMLElement', TestElement);
+    vi.stubGlobal('HTMLButtonElement', TestElement);
+    vi.stubGlobal('HTMLInputElement', TestElement);
+    vi.stubGlobal('HTMLSelectElement', TestElement);
+    vi.stubGlobal('HTMLTextAreaElement', TestElement);
+    vi.stubGlobal('document', documentRoot);
+    return documentRoot;
   };
 
   const createWindowRef = ({ manualAnimationFrame = false } = {}) => {
     const listeners = new Map<string, EventListener>();
     const animationFrameCallbacks: FrameRequestCallback[] = [];
-    return {
+    const windowRef = {
       listeners,
       animationFrameCallbacks,
       location: {
@@ -133,6 +163,9 @@ describe('admin editor recovery', () => {
       animationFrameCallbacks: FrameRequestCallback[];
       listeners: Map<string, EventListener>;
     };
+
+    vi.stubGlobal('window', windowRef);
+    return windowRef;
   };
 
   it('classifies editor optimized-dep dynamic import failures', async () => {
@@ -249,5 +282,26 @@ describe('admin editor recovery', () => {
     expect(writeText).toHaveBeenCalledWith('npm run dev:clean');
     expect(documentRoot.elements.status.textContent).toBe('已复制');
     expect(windowRef.location.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps Tab focus inside the recovery modal', async () => {
+    const { initAdminEditorRecovery } = await import('../src/scripts/admin-content/editor-recovery');
+    const documentRoot = createDocumentRoot();
+    const windowRef = createWindowRef();
+
+    initAdminEditorRecovery(windowRef, documentRoot);
+    documentRoot.elements.trigger.click();
+    documentRoot.elements.copyButton.focus.mockClear();
+    Object.assign(documentRoot, { activeElement: documentRoot.elements.closeButton });
+
+    const preventDefault = vi.fn();
+    documentRoot.listeners.get('keydown')?.({
+      key: 'Tab',
+      shiftKey: false,
+      preventDefault
+    } as unknown as KeyboardEvent);
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(documentRoot.elements.copyButton.focus).toHaveBeenCalledWith({ preventScroll: true });
   });
 });

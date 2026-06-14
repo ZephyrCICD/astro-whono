@@ -6,7 +6,6 @@
   --admin-editor-shell-section-gap: 14px;
   --admin-editor-shell-edge-gap: 10px;
   --admin-editor-outline-inline-size: 224px;
-  --admin-editor-outline-gap-inline-size: 8px;
   --admin-editor-shell-divider: color-mix(in srgb, var(--border) 76%, transparent);
   --admin-editor-body-max-inline-size: 760px;
   --admin-editor-single-pane-max-inline-size: 980px;
@@ -56,7 +55,7 @@
 
 .admin-editor-shell:not([data-side-panel='none']) .admin-editor-shell__layout {
   grid-template-columns: minmax(0, 1fr) var(--admin-editor-outline-inline-size);
-  gap: var(--admin-editor-outline-gap-inline-size);
+  gap: 0;
 }
 
 .admin-editor-shell__format-row {

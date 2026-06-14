@@ -18,7 +18,7 @@ body.admin-page--content-editor .admin-content-edit-page--workspace {
 }
 
 body.admin-page--content-editor .content {
-  --admin-editor-page-padding-top: 62px;
+  --admin-editor-page-padding-top: 40px;
   --admin-editor-page-padding-bottom: 0px;
 
   padding-inline: 0;
@@ -29,11 +29,12 @@ body.admin-page--content-editor .content {
 }
 
 :root[data-admin-sidebar='collapsed'] body.admin-page--content-editor {
-  --admin-rail-block-start: 26px;
+  --admin-rail-block-start: 8px;
+  --admin-sidebar-route-rail-padding-block-start: 0;
 }
 
 :root[data-admin-sidebar='collapsed'] body.admin-page--content-editor .content {
-  --admin-editor-page-padding-top: 28px;
+  --admin-editor-page-padding-top: 14px;
 }
 
 body.admin-page--content-editor {
@@ -95,6 +96,12 @@ body.admin-page--content-editor [data-admin-editor-page-actions-host]
   display: flex;
 }
 
+body.admin-page--content-editor [data-admin-editor-page-actions-host] .admin-editor-shell__top-actions .admin-btn {
+  min-height: 28px;
+  padding-inline: 8px;
+  border-radius: 4px;
+}
+
 body.admin-page--content-editor .admin-editor-shell__actions {
   display: none;
 }
@@ -102,7 +109,27 @@ body.admin-page--content-editor .admin-editor-shell__actions {
 .admin-content-edit-page--workspace .admin-content-page-head {
   align-items: center;
   padding-inline: 16px 12px;
-  padding-bottom: 18px;
+  padding-bottom: 12px;
+}
+
+.admin-content-edit-page--workspace .admin-content-page-head__copy {
+  flex: 1 1 320px;
+}
+
+.admin-content-edit-page--workspace .admin-content-title-row {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.admin-content-edit-page--workspace .admin-content-heading {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: min(62ch, 100%);
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-content-info-trigger {
@@ -112,7 +139,7 @@ body.admin-page--content-editor .admin-editor-shell__actions {
   align-items: center;
   justify-content: center;
   min-height: 22px;
-  padding: 1px 8px 2px;
+  padding: 1px 8px;
   border: 1px solid color-mix(in srgb, var(--admin-control-border) 82%, transparent);
   border-radius: 4px;
   background: color-mix(in srgb, var(--admin-control-bg) 88%, transparent);

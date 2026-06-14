@@ -6,6 +6,10 @@ import {
   mergeBitsPublishTagsText,
   splitBitsPublishTagsText
 } from './bits-publish-tags';
+import {
+  getFieldDescribedBy,
+  getFieldIssueId
+} from '../shared/field-issue-a11y';
 
 type Props = {
   value: AdminBitsEditorValues;
@@ -81,6 +85,7 @@ const getIssue = (path: string): string =>
   issues.find((issue) => issue.path === path)?.message ?? '';
 const dateIssue = $derived(getIssue('date'));
 const tagsIssue = $derived(getIssue('tags'));
+const ISSUE_ID_SCOPE = 'admin-bits-publish';
 const currentDateTimeApplied = $derived(
   currentDateTimeUndoValue !== null && currentDateTimeAppliedValue === value.date
 );
@@ -185,6 +190,7 @@ $effect(() => {
           value={dateTimeParts.date}
           {disabled}
           aria-invalid={dateIssue ? 'true' : undefined}
+          aria-describedby={getFieldDescribedBy(ISSUE_ID_SCOPE, 'date', dateIssue)}
           oninput={(event) => updateDatePart(event.currentTarget.value)}
         />
       </label>
@@ -200,6 +206,7 @@ $effect(() => {
           value={dateTimeParts.time}
           {disabled}
           aria-invalid={dateIssue ? 'true' : undefined}
+          aria-describedby={getFieldDescribedBy(ISSUE_ID_SCOPE, 'date', dateIssue)}
           oninput={(event) => updateTimePart(event.currentTarget.value)}
         />
       </label>
@@ -243,6 +250,7 @@ $effect(() => {
             {disabled}
             placeholder={INLINE_TAGS_PLACEHOLDER}
             aria-invalid={tagsIssue ? 'true' : undefined}
+            aria-describedby={getFieldDescribedBy(ISSUE_ID_SCOPE, 'tags', tagsIssue)}
             oninput={(event) => updateInlineTagsText(event.currentTarget.value)}
           />
           <span class="admin-bits-publish-field__measure" bind:this={tagsMeasureEl} aria-hidden="true">{inlineTagsMeasureText}</span>
@@ -262,6 +270,7 @@ $effect(() => {
             {disabled}
             placeholder={LOCATION_PLACEHOLDER}
             aria-invalid={tagsIssue ? 'true' : undefined}
+            aria-describedby={getFieldDescribedBy(ISSUE_ID_SCOPE, 'tags', tagsIssue)}
             oninput={(event) => updateLocationText(event.currentTarget.value)}
           />
           <span class="admin-bits-publish-field__measure" bind:this={locationMeasureEl} aria-hidden="true">{locationMeasureText}</span>
@@ -269,4 +278,6 @@ $effect(() => {
       </label>
     </div>
   </div>
+  <p id={getFieldIssueId(ISSUE_ID_SCOPE, 'date')} class="admin-sr-only" hidden={!dateIssue}>{dateIssue}</p>
+  <p id={getFieldIssueId(ISSUE_ID_SCOPE, 'tags')} class="admin-sr-only" hidden={!tagsIssue}>{tagsIssue}</p>
 </section>

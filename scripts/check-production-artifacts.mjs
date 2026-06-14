@@ -114,6 +114,9 @@ export const runProductionArtifactCheck = async (options = {}) => {
     'dist/api/admin/content/create',
     'dist/api/admin/content/export',
     'dist/api/admin/content/delete',
+    'dist/api/admin/content/bulk-status',
+    'dist/api/admin/content/bulk-delete',
+    'dist/api/admin/content/bulk-export',
     'dist/api/admin/preview',
     'dist/api/admin/images/list',
     'dist/api/admin/images/meta',
@@ -396,6 +399,24 @@ export const runProductionArtifactCheck = async (options = {}) => {
     !adminContentDeleteArtifact.includes('"trashedPath"')
       && !adminContentDeleteArtifact.includes('.trash/content'),
     'dist/api/admin/content/delete should not expose delete response data'
+  );
+  const adminContentBulkStatusArtifact = readText('dist/api/admin/content/bulk-status');
+  assertAdminContentStaticShell(
+    'dist/api/admin/content/bulk-status',
+    adminContentBulkStatusArtifact,
+    '/api/admin/content/bulk-status/'
+  );
+  const adminContentBulkDeleteArtifact = readText('dist/api/admin/content/bulk-delete');
+  assertAdminContentStaticShell(
+    'dist/api/admin/content/bulk-delete',
+    adminContentBulkDeleteArtifact,
+    '/api/admin/content/bulk-delete/'
+  );
+  const adminContentBulkExportArtifact = readText('dist/api/admin/content/bulk-export');
+  assertAdminContentStaticShell(
+    'dist/api/admin/content/bulk-export',
+    adminContentBulkExportArtifact,
+    '/api/admin/content/bulk-export/'
   );
   const adminPreviewArtifact = readText('dist/api/admin/preview');
   assertAdminPreviewStaticShell(

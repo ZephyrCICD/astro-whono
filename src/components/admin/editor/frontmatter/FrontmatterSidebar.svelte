@@ -14,6 +14,10 @@ import {
   isBitsEditorValues,
   isEssayEditorValues
 } from '../shared/content-editor-adapters';
+import {
+  getFieldDescribedBy as getSharedFieldDescribedBy,
+  getFieldIssueId as getSharedFieldIssueId
+} from '../shared/field-issue-a11y';
 
 type AdminContentIssue = {
   path: string;
@@ -56,17 +60,17 @@ const getIssue = (path: string): string =>
 const getIssueByPrefix = (prefix: string): string =>
   issues.find((issue) => issue.path.startsWith(prefix))?.message ?? '';
 
+const FRONTMATTER_ISSUE_ID_SCOPE = 'admin-frontmatter';
+
 const getFieldIssueId = (path: string): string =>
-  `admin-frontmatter-${path.replace(/[^a-zA-Z0-9_-]+/g, '-')}-error`;
+  getSharedFieldIssueId(FRONTMATTER_ISSUE_ID_SCOPE, path);
 
 const getFieldDescribedBy = (
   path: string,
   issue = getIssue(path),
   extraIds: readonly string[] = []
 ): string | undefined => {
-  const ids = [...extraIds];
-  if (issue) ids.push(getFieldIssueId(path));
-  return ids.length > 0 ? ids.join(' ') : undefined;
+  return getSharedFieldDescribedBy(FRONTMATTER_ISSUE_ID_SCOPE, path, issue, extraIds);
 };
 
 const base = import.meta.env.BASE_URL ?? '/';
