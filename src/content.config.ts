@@ -4,6 +4,7 @@ import { z } from 'astro/zod';
 import { ESSAY_PUBLIC_SLUG_RE } from './utils/slug-rules';
 import { normalizeBitsAvatarPath } from './utils/format';
 import { parseEssayDateInput, parseEssayPublishedAtInput } from './utils/date-only';
+import { normalizeBitsImageSource } from './lib/bits-image-source';
 
 const slugRule = z
   .string()
@@ -37,7 +38,7 @@ const essaySchema = z.object(essayShape).transform((data, ctx) => {
     ctx.addIssue({
       code: 'custom',
       path: ['date'],
-      message: 'date must be a valid YYYY-MM-DD date or ISO 8601 datetime'
+      message: 'date must be a valid YYYY-MM-DD date or ISO 8601 datetime with timezone'
     });
     return z.NEVER;
   }
@@ -98,7 +99,17 @@ const essaySchema = z.object(essayShape).transform((data, ctx) => {
 });
 
 const bitsImage = z.object({
-  src: z.string(),
+  src: z
+    .string()
+    .superRefine((value, ctx) => {
+      if (!normalizeBitsImageSource(value)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'images[].src 只允许 public/** 下的相对图片路径或 https:// 远程 URL，不要带 public/、不要以 / 开头，也不要使用 http、..、?、#'
+        });
+      }
+    })
+    .transform((value) => normalizeBitsImageSource(value) ?? value),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
   alt: z.string().optional()
@@ -148,7 +159,7 @@ const bits = defineCollection({
 const memo = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/memo' }),
   schema: z.object({
-    title: z.string(),
+    title: z.string().optional(),
     subtitle: z.string().optional(),
     date: z.coerce.date().optional(),
     draft: z.boolean().default(false),
@@ -156,4 +167,9 @@ const memo = defineCollection({
   })
 });
 
-export const collections = { essay, bits, memo };
+const about = defineCollection({
+  loader: glob({ pattern: 'index.md', base: './src/content/about' }),
+  schema: z.looseObject({})
+});
+
+export const collections = { essay, bits, memo, about };

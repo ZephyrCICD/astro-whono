@@ -1,27 +1,20 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import remarkDirective from 'remark-directive';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import remarkCallout from './src/plugins/remark-callout.mjs';
-import shikiToolbar from './src/plugins/shiki-toolbar.mjs';
+import svelte from '@astrojs/svelte';
+import { createPublicMarkdownConfig } from './src/plugins/markdown-pipeline.mjs';
 import { site, hasSiteUrl } from './site.config.mjs';
 
-const normalizeSiteBase = (value) => {
-  const normalized = value.trim().replace(/^\/+|\/+$/g, '');
-  return normalized ? `/${normalized}` : undefined;
-};
-
-const siteBase = normalizeSiteBase(process.env.SITE_BASE ?? '');
-
-const getSchemaAttrs = (tagName) => {
-  const attrs = defaultSchema.attributes?.[tagName];
-  return Array.isArray(attrs) ? attrs : [];
-};
-
-const mergeAttrs = (...lists) => Array.from(new Set(lists.flat()));
+const isProductionBuild = process.env.NODE_ENV === 'production';
 const SITEMAP_ROUTE_ROOTS = new Set(['about', 'admin', 'archive', 'bits', 'checks', 'essay', 'memo']);
+const rawDeploymentBase = process.env.ASTRO_WHONO_BASE_PATH ?? process.env.SITE_BASE ?? '/';
+
+const normalizeDeploymentBase = (value) => {
+  const segment = String(value ?? '').trim().replace(/^\/+|\/+$/g, '');
+  return segment ? `/${segment}/` : '/';
+};
+
+const deploymentBase = normalizeDeploymentBase(rawDeploymentBase);
 
 const normalizeSitemapPathname = (page) => {
   let pathname = '/';
@@ -52,99 +45,19 @@ const isExcludedSitemapPathname = (pathname) =>
   || /^\/essay\/[^/]+$/.test(pathname);
 
 const isExcludedSitemapEntry = (page) => isExcludedSitemapPathname(normalizeSitemapPathname(page));
-
-const sanitizeSchema = {
-  ...defaultSchema,
-  tagNames: [
-    ...(defaultSchema.tagNames ?? []),
-    'cite',
-    'figure',
-    'figcaption',
-    'picture',
-    'source',
-    'summary',
-    'details',
-    'dialog',
-    'button',
-    'svg',
-    'path',
-    'rect'
-  ],
-  attributes: {
-    ...(defaultSchema.attributes ?? {}),
-    '*': [
-      ...((defaultSchema.attributes?.['*'] ?? [])),
-      'className',
-      'class',
-      'id',
-      'title',
-      'role',
-      'style',
-      'tabIndex',
-      'tabindex',
-      'aria-label',
-      'aria-hidden',
-      'aria-live',
-      'aria-controls',
-      'aria-haspopup',
-      'aria-pressed',
-      'data-icon',
-      'data-lang',
-      'data-lines',
-      'data-state'
-    ],
-    a: mergeAttrs(getSchemaAttrs('a'), ['target', 'rel']),
-    img: mergeAttrs(getSchemaAttrs('img'), ['loading', 'decoding', 'width', 'height']),
-    source: mergeAttrs(getSchemaAttrs('source'), ['srcset', 'srcSet', 'type', 'media', 'sizes']),
-    ul: [['className', 'gallery', 'cols-2', 'cols-3', 'contains-task-list']],
-    figure: [['className', 'figure']],
-    figcaption: [['className', 'figure-caption']],
-    div: mergeAttrs(getSchemaAttrs('div'), ['dataIcon', 'dataLang', 'dataLines', 'data-icon', 'data-lang', 'data-lines']),
-    p: mergeAttrs(getSchemaAttrs('p'), ['dataIcon', 'data-icon']),
-    pre: mergeAttrs(getSchemaAttrs('pre'), ['dataLang', 'dataLines', 'data-lang', 'data-lines']),
-    code: mergeAttrs(getSchemaAttrs('code'), ['dataLang', 'data-lang']),
-    button: mergeAttrs(getSchemaAttrs('button'), [
-      'type',
-      'disabled',
-      'title',
-      'ariaLabel',
-      'aria-label',
-      'dataState',
-      'data-state'
-    ]),
-    svg: [
-      ...getSchemaAttrs('svg'),
-      'viewBox',
-      'width',
-      'height',
-      'fill',
-      'stroke',
-      'strokeWidth',
-      'strokeLinecap',
-      'strokeLinejoin',
-      'ariaHidden'
-    ],
-    path: [
-      ...getSchemaAttrs('path'),
-      'd',
-      'fill',
-      'stroke',
-      'strokeWidth',
-      'strokeLinecap',
-      'strokeLinejoin'
-    ],
-    rect: [...getSchemaAttrs('rect'), 'x', 'y', 'rx', 'ry', 'width', 'height']
-  }
-};
+const integrations = [
+  ...(!isProductionBuild ? [svelte()] : []),
+  ...(hasSiteUrl ? [sitemap({ filter: (page) => !isExcludedSitemapEntry(page) })] : [])
+];
 
 export default defineConfig({
   // Required for RSS generation. Prefer SITE_URL; fallback keeps build passing.
   site: site.url,
-  ...(siteBase ? { base: siteBase } : {}),
+  base: deploymentBase,
   // DEV 使用 server output 允许 Theme Console 的 /api/admin/settings/ 处理读写；
   // 构建阶段回到 static，让 /admin/ 保持只读提示，并避免把该路径当作生产公开 API。
-  output: process.env.NODE_ENV === 'production' ? 'static' : 'server',
-  integrations: hasSiteUrl ? [sitemap({ filter: (page) => !isExcludedSitemapEntry(page) })] : [],
+  output: isProductionBuild ? 'static' : 'server',
+  integrations,
   trailingSlash: 'always',
   build: {
     inlineStylesheets: 'auto'
@@ -154,17 +67,19 @@ export default defineConfig({
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
+    },
+    optimizeDeps: {
+      include: [
+        'emoji-picker-element',
+        '@lucide/svelte/icons/*',
+        '@codemirror/commands',
+        '@codemirror/lang-markdown',
+        '@codemirror/language',
+        '@codemirror/state',
+        '@codemirror/view',
+        '@lezer/highlight'
+      ]
     }
   },
-  markdown: {
-    remarkPlugins: [remarkDirective, remarkCallout],
-    rehypePlugins: [rehypeRaw, [rehypeSanitize, sanitizeSchema]],
-    shikiConfig: {
-      themes: {
-        light: 'github-light',
-        dark: 'github-dark'
-      },
-      transformers: [shikiToolbar()]
-    }
-  }
+  markdown: createPublicMarkdownConfig({ base: deploymentBase })
 });

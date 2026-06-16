@@ -1,161 +1,63 @@
 ---
+import { getEntry, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BrandIcon from '../../components/BrandIcon.astro';
 import '../../styles/about.css';
-import { getThemeSettings, type SiteSocialIconKey } from '../../lib/theme-settings';
+import { getThemeSettings } from '../../lib/theme-settings';
+import { replaceAboutContactLinksPlaceholderHtml } from '../../lib/about-contact-links';
+
+const entry = await getEntry('about', 'index');
+if (!entry) {
+  throw new Error('Missing about page entry: src/content/about/index.md');
+}
+
 const { settings } = getThemeSettings();
 const resolvedSocialItems = settings.site.socialLinks.resolvedSocialItems.filter((item) => item.visible);
 const aboutTitle = settings.page.about.title || '关于我';
 const aboutSubtitle = settings.page.about.subtitle;
-
-type SocialActionItem = {
-  key: string;
-  href: string;
-  label: string;
-  title: string;
-  icon: SiteSocialIconKey;
-};
-
-type ContactItem = {
-  key: string;
-  href: string;
-  icon: SiteSocialIconKey;
-  text: string;
-};
-
-const formatExternalLabel = (href: string): string => {
-  try {
-    const parsed = new URL(href);
-    const path = parsed.pathname.replace(/^\/+|\/+$/g, '');
-    return path || parsed.hostname;
-  } catch {
-    return href;
-  }
-};
-
-const isHttpUrl = (href: string): boolean => /^https?:\/\//i.test(href);
-
-const socialItems: SocialActionItem[] = [
-  ...resolvedSocialItems.map((item) => ({
-    key: item.id,
-    href: item.href,
-    label: item.label,
-    title: item.label,
-    icon: item.iconKey
-  }))
-];
-
-const contactItems: ContactItem[] = [
-  ...resolvedSocialItems.map((item) => ({
-    key: item.id,
-    href: item.href,
-    icon: item.iconKey,
-    text: item.id === 'email' ? item.href.replace(/^mailto:/i, '') : formatExternalLabel(item.href)
-  }))
-];
+const entryWithContactLinks = entry.rendered
+  ? {
+      ...entry,
+      rendered: {
+        ...entry.rendered,
+        html: replaceAboutContactLinksPlaceholderHtml(entry.rendered.html, resolvedSocialItems)
+      }
+    }
+  : entry;
+const { Content } = await render(entryWithContactLinks);
 ---
 
-<BaseLayout title={aboutTitle} bodyClass="about-page">
+<BaseLayout
+  title={aboutTitle}
+  description={aboutSubtitle ?? undefined}
+  bodyClass="about-page"
+>
   <div class="page-header page-header--about">
     <div class="page-heading">
       <h1 class="page-title">{aboutTitle}</h1>
       {aboutSubtitle ? <span class="page-subtitle">{aboutSubtitle}</span> : null}
     </div>
     {
-      socialItems.length ? (
+      resolvedSocialItems.length ? (
         <div class="page-actions">
-          {socialItems.map((item) => (
-            <a
-              class="icon-link"
-              href={item.href}
-              aria-label={item.title}
-              title={item.title}
-              target={isHttpUrl(item.href) ? '_blank' : undefined}
-              rel={isHttpUrl(item.href) ? 'noopener noreferrer' : undefined}
-            >
-              <BrandIcon name={item.icon} class="icon" />
+          {resolvedSocialItems.map((item) => (
+            <a class="icon-link" href={item.href} aria-label={item.label} title={item.label}>
+              <BrandIcon name={item.iconKey} class="icon" />
             </a>
           ))}
         </div>
       ) : null
     }
   </div>
-  <p class="about-intro-line">
-    你好！我是 Zephyr，一名开发者，平时主要写 Java，也在学习使用 Golang 和 TypeScript。<br /><br />
-    开这个博客，是想给自己留一块安静的角落，把工作里遇到的坑、学到的技巧、偶尔冒出来的想法好好记下来。<br /><br />
-    与其让灵光一闪就消失，不如让它们有迹可循。也许几年后回头看，会觉得这些记录像一条成长轨迹，足够让人感到开心和踏实。<br /><br />
-    如果你刚好从这些笔记里获得一点灵感，那就太好了。
-  </p>
-  <h2 class="section-title about-section-title">技术栈</h2>
-  <div class="tech-stack">
-    <section class="tech-group">
-      <div class="tech-group-title">后端主线</div>
-      <ul class="tech-list">
-        <li class="tech-item">
-          <div class="tech-item-head">
-            <span class="tech-item-title">Java / Spring Boot</span>
-          </div>
-          <div class="tech-item-desc">日常主力技术栈，负责业务开发和服务实现。</div>
-        </li>
-        <li class="tech-item">
-          <div class="tech-item-head">
-            <span class="tech-item-title">Spring Cloud</span>
-          </div>
-          <div class="tech-item-desc">微服务治理、配置、调用链路和工程化实践。</div>
-        </li>
-        <li class="tech-item">
-          <div class="tech-item-head">
-            <span class="tech-item-title">Golang / Gin / GORM</span>
-          </div>
-          <div class="tech-item-desc">正在学习和使用的服务端方向。</div>
-        </li>
-      </ul>
-    </section>
-    <section class="tech-group">
-      <div class="tech-group-title">前端与效率</div>
-      <ul class="tech-list">
-        <li class="tech-item">
-          <div class="tech-item-head">
-            <span class="tech-item-title">TypeScript / Vue 3</span>
-          </div>
-          <div class="tech-item-desc">用于补齐前端交互、页面实现和类型化开发。</div>
-        </li>
-        <li class="tech-item">
-          <div class="tech-item-head">
-            <span class="tech-item-title">Python / Shell</span>
-          </div>
-          <div class="tech-item-desc">自动化脚本、环境处理和日常效率工具。</div>
-        </li>
-      </ul>
-    </section>
-    
+
+  <div class="about-body prose">
+    <Content />
   </div>
 
-  {
-    contactItems.length ? (
-      <>
-        <h2 class="section-title about-section-title">联系与订阅</h2>
-        <section class="contact-block" aria-label="联系方式">
-          <p class="contact-note">如果你有问题、建议，或想订阅更新，可以通过以下方式联系。</p>
-          <ul class="contact-list">
-            {contactItems.map((item) => (
-              <li>
-                <span class="contact-link-head" aria-hidden="true">
-                  <BrandIcon name={item.icon} class="contact-icon" />
-                </span>
-                <a
-                  href={item.href}
-                  target={isHttpUrl(item.href) ? '_blank' : undefined}
-                  rel={isHttpUrl(item.href) ? 'noopener noreferrer' : undefined}
-                >
-                  {item.text}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </>
-    ) : null
-  }
+  <script>
+    import { initAboutSiteInfoCopyButtons, initCodeCopyButtons } from '../../scripts/lightbox';
 
+    initCodeCopyButtons();
+    initAboutSiteInfoCopyButtons();
+  </script>
 </BaseLayout>

@@ -1,12 +1,16 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   assertAdminOverviewHeader,
   assertAdminContentStaticShell,
   assertAdminImageStaticShell,
+  assertAdminImageUploadStaticShell,
+  assertAdminPreviewStaticShell,
   assertNoAdminRouteNav,
+  assertNoDevAdminUiPreferenceChrome,
   assertAdminSettingsStaticShell,
+  DEV_ADMIN_UI_PREFERENCE_MARKERS,
   expect
 } from './smoke-utils.mjs';
 
@@ -21,6 +25,65 @@ export const resolveRequiredSiteUrl = () => {
 const readText = (filePath) => {
   expect(existsSync(filePath), `Expected build artifact is missing: ${filePath}`);
   return readFileSync(filePath, 'utf8');
+};
+
+const findAdminContentEditArtifactDirs = () => {
+  const root = 'dist/admin/content';
+  if (!existsSync(root)) return [];
+
+  const matches = [];
+  const walk = (dirPath) => {
+    for (const entry of readdirSync(dirPath, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const fullPath = path.join(dirPath, entry.name);
+      if (entry.name === '_edit') {
+        matches.push(fullPath);
+      }
+      walk(fullPath);
+    }
+  };
+
+  walk(root);
+  return matches;
+};
+
+const findBuiltAstroAssets = () => {
+  const root = 'dist/_astro';
+  if (!existsSync(root)) return [];
+
+  return readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && /\.(css|js)$/i.test(entry.name))
+    .map((entry) => path.join(root, entry.name));
+};
+
+const assertNoDevAdminUiPreferenceAssets = () => {
+  for (const filePath of findBuiltAstroAssets()) {
+    for (const marker of DEV_ADMIN_UI_PREFERENCE_MARKERS) {
+      expect(
+        !filePath.includes(marker),
+        `${filePath} should not be emitted as a DEV-only admin UI preference asset`
+      );
+    }
+    assertNoDevAdminUiPreferenceChrome(filePath, readText(filePath));
+  }
+};
+
+const EMOJI_PICKER_ARTIFACT_MARKERS = [
+  'emoji-picker-element',
+  'emoji-picker-element-data',
+  '<emoji-picker'
+];
+
+const assertNoEmojiPickerAssets = () => {
+  for (const filePath of findBuiltAstroAssets()) {
+    const content = readText(filePath);
+    for (const marker of EMOJI_PICKER_ARTIFACT_MARKERS) {
+      expect(
+        !content.includes(marker),
+        `${filePath} should not contain emoji picker artifacts (${marker})`
+      );
+    }
+  }
 };
 
 const PREV_LINK_PATTERN = /<a class="prev-next__link prev-next__link--prev"[^>]*rel="prev">/;
@@ -52,9 +115,6 @@ export const runProductionArtifactCheck = async (options = {}) => {
     'dist/about/index.html',
     'dist/admin/index.html',
     'dist/admin/content/index.html',
-    'dist/admin/content/essay/index.html',
-    'dist/admin/content/bits/index.html',
-    'dist/admin/content/memo/index.html',
     'dist/admin/images/index.html',
     'dist/admin/checks/index.html',
     'dist/bits/index.html',
@@ -63,8 +123,16 @@ export const runProductionArtifactCheck = async (options = {}) => {
     'dist/api/admin/settings',
     'dist/api/admin/data/settings',
     'dist/api/admin/content/entry',
+    'dist/api/admin/content/create',
+    'dist/api/admin/content/export',
+    'dist/api/admin/content/delete',
+    'dist/api/admin/content/bulk-status',
+    'dist/api/admin/content/bulk-delete',
+    'dist/api/admin/content/bulk-export',
+    'dist/api/admin/preview',
     'dist/api/admin/images/list',
-    'dist/api/admin/images/meta'
+    'dist/api/admin/images/meta',
+    'dist/api/admin/images/upload'
   ];
 
   for (const artifactPath of requiredArtifacts) {
@@ -100,6 +168,8 @@ export const runProductionArtifactCheck = async (options = {}) => {
   const leakedEssayDetail = sitemapLocs.find((loc) => /^essay\/[^/]+$/.test(stripSitePathPrefix(new URL(loc).pathname)));
   expect(!leakedEssayDetail, `Essay compatibility redirect leaked into sitemap: ${leakedEssayDetail}`);
 
+  assertNoEmojiPickerAssets();
+
   const aboutHtml = readText('dist/about/index.html');
   expect(
     aboutHtml.includes(`<link rel="canonical" href="${siteUrl}/about/"`),
@@ -109,30 +179,38 @@ export const runProductionArtifactCheck = async (options = {}) => {
     aboutHtml.includes(`<meta property="og:url" content="${siteUrl}/about/"`),
     'About page og:url no longer matches SITE_URL'
   );
+  assertNoDevAdminUiPreferenceChrome('dist/about/index.html', aboutHtml);
   expect(!/\.admin-/.test(aboutHtml), 'Public about page still contains admin CSS rules');
   expect(!/--admin-status-/.test(aboutHtml), 'Public about page still contains admin CSS tokens');
 
   const adminHtml = readText('dist/admin/index.html');
   const adminContentHtml = readText('dist/admin/content/index.html');
-  const adminContentEssayHtml = readText('dist/admin/content/essay/index.html');
-  const adminContentBitsHtml = readText('dist/admin/content/bits/index.html');
-  const adminContentMemoHtml = readText('dist/admin/content/memo/index.html');
   const adminImageHtml = readText('dist/admin/images/index.html');
   const adminChecksHtml = readText('dist/admin/checks/index.html');
   const adminThemeHtml = readText('dist/admin/theme/index.html');
   const adminDataHtml = readText('dist/admin/data/index.html');
   const readonlyAdminHtmlChecks = [
     ['dist/admin/content/index.html', adminContentHtml, 'Content Console'],
-    ['dist/admin/content/essay/index.html', adminContentEssayHtml, 'Content Console'],
-    ['dist/admin/content/bits/index.html', adminContentBitsHtml, 'Content Console'],
-    ['dist/admin/content/memo/index.html', adminContentMemoHtml, 'Content Console'],
     ['dist/admin/images/index.html', adminImageHtml, 'Images Console'],
     ['dist/admin/checks/index.html', adminChecksHtml, 'Checks Console'],
     ['dist/admin/theme/index.html', adminThemeHtml, 'Theme Console'],
     ['dist/admin/data/index.html', adminDataHtml, 'Data Console']
   ];
+  [
+    'dist/admin/content/essay/index.html',
+    'dist/admin/content/bits/index.html',
+    'dist/admin/content/memo/index.html'
+  ].forEach((filePath) => {
+    expect(!existsSync(filePath), `${filePath} should not be generated after collection list routes were removed`);
+  });
+  const adminContentEditArtifactDirs = findAdminContentEditArtifactDirs();
+  expect(
+    adminContentEditArtifactDirs.length === 0,
+    `Production build should not generate per-entry admin content edit artifacts: ${adminContentEditArtifactDirs.join(', ')}`
+  );
 
   assertAdminOverviewHeader('dist/admin/index.html', adminHtml);
+  assertNoDevAdminUiPreferenceChrome('dist/admin/index.html', adminHtml);
   if (adminHtml.includes('data-admin-overview-mode="hidden"')) {
     expect(
       adminHtml.includes('admin-site-overview__hidden-message'),
@@ -158,6 +236,7 @@ export const runProductionArtifactCheck = async (options = {}) => {
   for (const [filePath, html, heading] of readonlyAdminHtmlChecks) {
     expect(html.includes(heading), `${filePath} is missing the expected ${heading} route heading`);
     assertNoAdminRouteNav(filePath, html);
+    assertNoDevAdminUiPreferenceChrome(filePath, html);
     expect(!html.includes('data-admin-root'), `${filePath} should stay readonly outside dev`);
     expect(!html.includes('id="admin-bootstrap"'), `${filePath} should not emit theme bootstrap payload`);
     expect(!html.includes('data-admin-content-root'), `${filePath} should not emit content console payload`);
@@ -169,12 +248,14 @@ export const runProductionArtifactCheck = async (options = {}) => {
       `${filePath} still links an external _astro module script`
     );
   }
+  assertNoDevAdminUiPreferenceAssets();
 
   const indexHtml = readText('dist/index.html');
   expect(
     /<h1 class="sr-only">[^<]+<\/h1>/.test(indexHtml),
     'Homepage hidden H1 is missing from dist/index.html'
   );
+  assertNoDevAdminUiPreferenceChrome('dist/index.html', indexHtml);
   expect(!/\.admin-/.test(indexHtml), 'Homepage still contains admin CSS rules');
   expect(!/--admin-status-/.test(indexHtml), 'Homepage still contains admin CSS tokens');
 
@@ -303,6 +384,58 @@ export const runProductionArtifactCheck = async (options = {}) => {
     adminContentEntryArtifact,
     '/api/admin/content/entry/'
   );
+  const adminContentCreateArtifact = readText('dist/api/admin/content/create');
+  assertAdminContentStaticShell(
+    'dist/api/admin/content/create',
+    adminContentCreateArtifact,
+    '/api/admin/content/create/'
+  );
+  const adminContentExportArtifact = readText('dist/api/admin/content/export');
+  assertAdminContentStaticShell(
+    'dist/api/admin/content/export',
+    adminContentExportArtifact,
+    '/api/admin/content/export/'
+  );
+  expect(
+    !adminContentExportArtifact.includes('content-disposition')
+      && !adminContentExportArtifact.includes('# Admin Console'),
+    'dist/api/admin/content/export should not expose source download response data'
+  );
+  const adminContentDeleteArtifact = readText('dist/api/admin/content/delete');
+  assertAdminContentStaticShell(
+    'dist/api/admin/content/delete',
+    adminContentDeleteArtifact,
+    '/api/admin/content/delete/'
+  );
+  expect(
+    !adminContentDeleteArtifact.includes('"trashedPath"')
+      && !adminContentDeleteArtifact.includes('.trash/content'),
+    'dist/api/admin/content/delete should not expose delete response data'
+  );
+  const adminContentBulkStatusArtifact = readText('dist/api/admin/content/bulk-status');
+  assertAdminContentStaticShell(
+    'dist/api/admin/content/bulk-status',
+    adminContentBulkStatusArtifact,
+    '/api/admin/content/bulk-status/'
+  );
+  const adminContentBulkDeleteArtifact = readText('dist/api/admin/content/bulk-delete');
+  assertAdminContentStaticShell(
+    'dist/api/admin/content/bulk-delete',
+    adminContentBulkDeleteArtifact,
+    '/api/admin/content/bulk-delete/'
+  );
+  const adminContentBulkExportArtifact = readText('dist/api/admin/content/bulk-export');
+  assertAdminContentStaticShell(
+    'dist/api/admin/content/bulk-export',
+    adminContentBulkExportArtifact,
+    '/api/admin/content/bulk-export/'
+  );
+  const adminPreviewArtifact = readText('dist/api/admin/preview');
+  assertAdminPreviewStaticShell(
+    'dist/api/admin/preview',
+    adminPreviewArtifact,
+    '/api/admin/preview/'
+  );
   const adminImageListArtifact = readText('dist/api/admin/images/list');
   assertAdminImageStaticShell(
     'dist/api/admin/images/list',
@@ -314,6 +447,12 @@ export const runProductionArtifactCheck = async (options = {}) => {
     'dist/api/admin/images/meta',
     adminImageMetaArtifact,
     '/api/admin/images/meta/'
+  );
+  const adminImageUploadArtifact = readText('dist/api/admin/images/upload');
+  assertAdminImageUploadStaticShell(
+    'dist/api/admin/images/upload',
+    adminImageUploadArtifact,
+    '/api/admin/images/upload/'
   );
 
   console.log('Production artifact verification passed.');
