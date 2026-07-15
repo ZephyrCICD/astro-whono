@@ -2,6 +2,9 @@ const THEME_KEY = 'theme';
 const THEME_MODE_KEY = 'theme-mode';
 type Theme = 'light' | 'dark';
 type ThemeMode = Theme | 'system';
+type LegacyMediaQueryList = {
+  addListener?: (listener: () => void) => void;
+};
 
 const root = document.documentElement;
 const body = document.body;
@@ -75,6 +78,16 @@ const getThemeModeLabel = (mode: ThemeMode, theme: Theme): string => {
   return `${current}模式，点击切换为${next}`;
 };
 
+const setControlLabel = (element: HTMLElement, label: string) => {
+  element.setAttribute('aria-label', label);
+  if (element.hasAttribute('data-tooltip')) {
+    element.setAttribute('data-tooltip', label);
+    element.removeAttribute('title');
+    return;
+  }
+  element.setAttribute('title', label);
+};
+
 let activeThemeMode: ThemeMode = readThemeMode();
 
 const applyTheme = (theme: Theme, mode: ThemeMode = activeThemeMode) => {
@@ -84,8 +97,7 @@ const applyTheme = (theme: Theme, mode: ThemeMode = activeThemeMode) => {
   if (themeBtn) {
     themeBtn.setAttribute('aria-pressed', mode === 'system' ? 'mixed' : (dark ? 'true' : 'false'));
     const label = getThemeModeLabel(mode, theme);
-    themeBtn.setAttribute('aria-label', label);
-    themeBtn.setAttribute('title', label);
+    setControlLabel(themeBtn, label);
   }
 };
 
@@ -93,6 +105,16 @@ const setThemeMode = (mode: ThemeMode, persist = true) => {
   activeThemeMode = mode;
   applyTheme(resolveTheme(mode), mode);
   if (persist) writeThemeMode(mode);
+};
+
+const listenSystemThemeChange = (listener: () => void) => {
+  if (typeof colorSchemeMq.addEventListener === 'function') {
+    colorSchemeMq.addEventListener('change', listener);
+    return;
+  }
+
+  const legacyColorSchemeMq = colorSchemeMq as unknown as LegacyMediaQueryList;
+  legacyColorSchemeMq.addListener?.(listener);
 };
 
 const initTheme = () => {
@@ -105,7 +127,7 @@ const initTheme = () => {
     if (activeThemeMode === 'system') setThemeMode('system', false);
   };
 
-  colorSchemeMq.addEventListener?.('change', syncSystemTheme);
+  listenSystemThemeChange(syncSystemTheme);
 };
 
 const isReaderOn = () => body?.dataset.reading === 'immersive';
