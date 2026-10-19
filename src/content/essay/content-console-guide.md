@@ -6,6 +6,8 @@ date: 2026-06-13
 updatedAt: 2026-10-19
 tags: [ "Content Console", "指南" ]
 draft: false
+archive: true
+listed: false
 ---
 
 astro-whono 提供一个本地 Content Console，用于在开发环境中管理站点的写作内容。

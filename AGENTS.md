@@ -226,7 +226,7 @@ Style only the About page local classes in `src/styles/about.css`: `.qa-list`, `
 When converting this fork into a personal blog:
 
 - Replace upstream brand/title/author defaults in Theme Console settings and/or `site.config.mjs`.
-- Upstream tutorial/example/Astro guide posts may be kept as reference material only when marked `listed: false`; keep durable conventions in `AGENTS.md` and tests.
+- All essays inherited from upstream and all blog/theme usage guides must use `listed: false`, including newly added articles during upstream syncs. Keep them available in the archive and by direct URL, but exclude them from the home page, essay lists, essay RSS, and essay search JSON. Keep durable conventions in `AGENTS.md` and tests.
 - Replace or remove demo posts under `src/content/essay`, `src/content/bits`, and `src/content/memo`.
 - Replace demo images under `public/**` and article asset folders when they are no longer referenced.
 - Keep `src/test-fixtures/markdown-smoke.md` or an equivalent fixture even if tutorial posts are removed; it protects markdown rendering behavior.
