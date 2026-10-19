@@ -421,7 +421,7 @@ const DEFAULT_PRESET_SOCIAL_ORDER: SiteSocialPresetOrder = {
 };
 const LEGACY_SOCIAL_LINKS: SiteSocialLinks = {
   github: 'https://github.com/zephyrcicd',
-  x: 'https://twitter.com/zephyrcicd',
+  x: null,
   email: null,
   presetOrder: { ...DEFAULT_PRESET_SOCIAL_ORDER },
   custom: [],

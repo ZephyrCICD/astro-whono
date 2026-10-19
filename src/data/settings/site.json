@@ -18,7 +18,7 @@
   },
   "socialLinks": {
     "github": "https://github.com/zephyrcicd",
-    "x": "https://twitter.com/zephyrcicd",
+    "x": null,
     "email": "zephyrcicd@gmail.com",
     "presetOrder": {
       "github": 1,
