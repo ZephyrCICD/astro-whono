@@ -6,9 +6,9 @@ This repo was forked from `astro-whono` and is being converted into a personal b
 
 ## Project Context
 
-- This is an Astro 6 static blog/theme with local development admin tools.
+- This is an Astro 7 static blog/theme with local development admin tools.
 - Package manager: pnpm 10.15.1. Keep `pnpm-lock.yaml` in sync when dependency changes are intentional.
-- Node requirement: `>=22.12.0`. `.nvmrc` currently records `22.22.0`, but local toolchains may use mise or another manager.
+- Node requirement: `>=22.22.0`. `.nvmrc` currently records `22.22.0`, but local toolchains may use mise or another manager.
 - Main configuration entry points:
   - `site.config.mjs` for legacy/default site values and pagination constants.
   - `src/content.config.ts` for Astro Content Collections schemas.
@@ -118,6 +118,8 @@ Rules:
 
 ## Markdown Conventions
 
+Astro 7 uses the explicit `unified()` processor from `@astrojs/markdown-remark`; retain `compressHTML: true` to preserve inline spacing.
+
 The durable Markdown rendering contract is covered by `src/test-fixtures/markdown-smoke.md` and `pnpm run check:markdown-smoke`.
 
 ### Essay Embedded Images
@@ -171,10 +173,12 @@ Admin Console is a local development tool, not a production CMS.
 - Stable entry: `/admin/`.
 - Theme settings: `/admin/theme/`.
 - Images browser/path helper: `/admin/images/`.
-- Checks: `/admin/checks/`.
+- The former `/admin/checks/` console has been removed; tag route keys are validated when saving content.
 - Data import/export: `/admin/data/`.
-- Content Console is still in progress.
+- Content Console supports editing, export, bulk actions, and image uploads.
 - `src/data/settings/*.json` is generated or updated by Theme Console saves and should be treated as normal tracked project state when personalization is intentional.
+- Theme Console supports custom site icon uploads through `/api/admin/site-assets/upload/` in development.
+- Image uploads default to local storage. S3-compatible storage is opt-in via `ASTRO_WHONO_IMAGE_STORAGE=s3` and `ASTRO_WHONO_S3_*` environment variables; never store credentials in tracked settings. Live cloud smoke checks require explicit opt-in and write/delete a temporary object.
 - Theme Console writes by settings group: `site`, `shell`, `home`, `page`, `ui`.
 - Settings read order is `src/data/settings/*.json` first, then legacy config, then defaults.
 - In production, `/admin/` may expose only a read-only overview or hidden-state message depending on settings. Admin tabs and write forms must stay development-only.

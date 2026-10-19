@@ -36,6 +36,11 @@ const previewHost = '127.0.0.1';
 const ADMIN_BOOTSTRAP_XSS_SENTINEL = '__ADMIN_BOOTSTRAP_XSS_SENTINEL__';
 const ADMIN_BOOTSTRAP_BREAKOUT_PAYLOAD = `</script><script>window.${ADMIN_BOOTSTRAP_XSS_SENTINEL}=1</script>`;
 const ADMIN_CONTENT_LOCAL_DEV_NOTICE = '若需查看或编辑内容索引';
+const basePathSegment = String(process.env.ASTRO_WHONO_BASE_PATH ?? process.env.SITE_BASE ?? '')
+  .trim()
+  .replace(/^\/+|\/+$/g, '');
+const basePrefix = basePathSegment ? `/${basePathSegment}` : '';
+const withBasePath = (pathname) => `${basePrefix}${pathname.startsWith('/') ? pathname : `/${pathname}`}`;
 
 const getRequestedPort = (envName, fallbackPort) => {
   const parsed = Number(process.env[envName] ?? String(fallbackPort));
@@ -43,7 +48,7 @@ const getRequestedPort = (envName, fallbackPort) => {
 };
 
 const request = async (baseUrl, pathname, init = {}) => {
-  const response = await fetch(`${baseUrl}${pathname}`, init);
+  const response = await fetch(`${baseUrl}${withBasePath(pathname)}`, init);
   const bodyText = await response.text();
   let bodyJson = null;
   try {
@@ -271,16 +276,6 @@ const assertReadonlyAdminDataShell = (label, response) => {
   assertNoAdminRouteNav(label, response.body);
   expect(!response.body.includes('data-admin-data-root'), `${label} should stay readonly outside dev`);
   expect(!response.body.includes('id="admin-data-bootstrap"'), `${label} should not emit data bootstrap payload outside dev`);
-};
-
-const assertReadonlyAdminChecksShell = (label, response) => {
-  expect(response.status === 200, `${label} returned ${response.status}`);
-  expect(
-    response.contentType.toLowerCase().includes('text/html'),
-    `${label} did not return HTML`
-  );
-  expect(response.body.includes('Checks Console'), `${label} is missing the Checks Console route heading`);
-  assertNoAdminRouteNav(label, response.body);
 };
 
 const assertReadonlyAdminImageShell = (label, response) => {
@@ -713,7 +708,7 @@ export const runPreviewAdminBoundaryCheck = async () => {
   const baseUrl = `http://${previewHost}:${previewPort}`;
 
   try {
-    await waitForHttpReady(`${baseUrl}/`);
+    await waitForHttpReady(`${baseUrl}${withBasePath('/')}`);
 
     const adminOverviewResponse = await request(baseUrl, '/admin/');
     const adminThemeResponse = await request(baseUrl, '/admin/theme/');
@@ -721,7 +716,6 @@ export const runPreviewAdminBoundaryCheck = async () => {
     const adminEssayContentEditResponse = await request(baseUrl, '/admin/content/essay/_edit/admin-console-guide/');
     const adminAboutContentEditResponse = await request(baseUrl, '/admin/content/about/_edit/index/');
     const adminImageResponse = await request(baseUrl, '/admin/images/');
-    const adminChecksResponse = await request(baseUrl, '/admin/checks/');
     const adminDataResponse = await request(baseUrl, '/admin/data/');
     const getResponse = await request(baseUrl, '/api/admin/settings/');
     const exportResponse = await request(baseUrl, '/api/admin/data/settings/');
@@ -743,6 +737,7 @@ export const runPreviewAdminBoundaryCheck = async () => {
     const imageListResponse = await request(baseUrl, '/api/admin/images/list/');
     const imageMetaResponse = await request(baseUrl, '/api/admin/images/meta/');
     const imageUploadGetResponse = await request(baseUrl, '/api/admin/images/upload/');
+    const siteAssetUploadGetResponse = await request(baseUrl, '/api/admin/site-assets/upload/');
     const imageUploadFormData = new FormData();
     imageUploadFormData.set('collection', 'essay');
     imageUploadFormData.set('entryId', 'preview-boundary-demo');
@@ -845,6 +840,20 @@ export const runPreviewAdminBoundaryCheck = async () => {
       },
       body: imageUploadFormData
     });
+    const siteAssetUploadFormData = new FormData();
+    siteAssetUploadFormData.set('slot', 'png');
+    siteAssetUploadFormData.set(
+      'image',
+      new Blob(['preview boundary'], { type: 'image/png' }),
+      'preview-boundary.png'
+    );
+    const siteAssetUploadPostResponse = await request(baseUrl, '/api/admin/site-assets/upload/', {
+      method: 'POST',
+      headers: {
+        origin: baseUrl
+      },
+      body: siteAssetUploadFormData
+    });
     const postResponse = await request(baseUrl, '/api/admin/settings/', {
       method: 'POST',
       headers: {
@@ -860,7 +869,6 @@ export const runPreviewAdminBoundaryCheck = async () => {
     assertAdminContentEditStaticMissing('Preview GET /admin/content/essay/_edit/admin-console-guide/', adminEssayContentEditResponse);
     assertAdminContentEditStaticMissing('Preview GET /admin/content/about/_edit/index/', adminAboutContentEditResponse);
     assertReadonlyAdminImageShell('Preview GET /admin/images/', adminImageResponse);
-    assertReadonlyAdminChecksShell('Preview GET /admin/checks/', adminChecksResponse);
     assertReadonlyAdminDataShell('Preview GET /admin/data/', adminDataResponse);
     assertAdminSettingsStaticResponse('GET /api/admin/settings/', getResponse);
     assertAdminSettingsStaticResponse('GET /api/admin/data/settings/', exportResponse, '/api/admin/data/settings/');
@@ -871,6 +879,11 @@ export const runPreviewAdminBoundaryCheck = async () => {
     assertAdminImageStaticResponse('GET /api/admin/images/list/', imageListResponse, '/api/admin/images/list/');
     assertAdminImageStaticResponse('GET /api/admin/images/meta/', imageMetaResponse, '/api/admin/images/meta/');
     assertAdminImageUploadStaticResponse('GET /api/admin/images/upload/', imageUploadGetResponse);
+    assertAdminImageUploadStaticResponse(
+      'GET /api/admin/site-assets/upload/',
+      siteAssetUploadGetResponse,
+      '/api/admin/site-assets/upload/'
+    );
     assertAdminContentStaticResponse('POST /api/admin/content/entry/', contentPostResponse);
     assertAdminContentStaticResponse('POST /api/admin/content/delete/', contentDeleteResponse, '/api/admin/content/delete/');
     assertAdminContentStaticResponse('POST /api/admin/content/bulk-status/', contentBulkStatusResponse, '/api/admin/content/bulk-status/');
@@ -878,6 +891,11 @@ export const runPreviewAdminBoundaryCheck = async () => {
     assertAdminContentStaticResponse('POST /api/admin/content/bulk-export/', contentBulkExportResponse, '/api/admin/content/bulk-export/');
     assertAdminPreviewStaticResponse('POST /api/admin/preview/', previewPostResponse);
     assertAdminImageUploadStaticResponse('POST /api/admin/images/upload/', imageUploadPostResponse);
+    assertAdminImageUploadStaticResponse(
+      'POST /api/admin/site-assets/upload/',
+      siteAssetUploadPostResponse,
+      '/api/admin/site-assets/upload/'
+    );
     assertAdminSettingsStaticResponse('POST /api/admin/settings/', postResponse);
     console.log('Preview admin boundary check passed.');
   } finally {
@@ -892,11 +910,15 @@ export const runDevAdminSettingsSmokeCheck = async () => {
   const baseUrl = `http://${previewHost}:${availablePort}`;
   let stdout = '';
   let stderr = '';
-  const child = spawn(process.execPath, [astroCliPath, 'dev', '--host', previewHost, '--port', String(availablePort)], {
+  // Astro 7 在探测到 AI agent 环境时会把 dev server 自动转为后台守护进程(带 lock 注册表),
+  // teardown 只能杀掉 CLI 子进程、守护进程会泄漏并卡死下一次运行的端口探活。
+  // ASTRO_DEV_BACKGROUND=0 关闭该探测强制前台;--ignore-lock 使测试实例完全不读写注册表。
+  const child = spawn(process.execPath, [astroCliPath, 'dev', '--host', previewHost, '--port', String(availablePort), '--ignore-lock'], {
     cwd: projectRoot,
     env: {
       ...process.env,
       NODE_ENV: 'development',
+      ASTRO_DEV_BACKGROUND: '0',
       ASTRO_WHONO_INTERNAL_TEST_PROJECT_ROOT: fixture.tempRoot,
       ASTRO_WHONO_INTERNAL_TEST_SETTINGS: '1',
       ASTRO_WHONO_INTERNAL_TEST_SETTINGS_DIR: fixture.settingsDir
@@ -912,7 +934,7 @@ export const runDevAdminSettingsSmokeCheck = async () => {
   });
 
   try {
-    await waitForHttpReady(`${baseUrl}/`, { attempts: 75, intervalMs: 200 });
+    await waitForHttpReady(`${baseUrl}${withBasePath('/')}`, { attempts: 75, intervalMs: 200 });
 
     const getResponse = await waitForJsonApiReady(baseUrl, '/api/admin/settings/');
     expect(getResponse.status === 200, `Dev GET /api/admin/settings/ returned ${getResponse.status}`);

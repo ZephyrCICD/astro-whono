@@ -20,7 +20,7 @@ The project is built with Astro and forked from [cxro/astro-whono](https://githu
 
 Requirements:
 
-- Node.js `>=22.12.0`
+- Node.js `>=22.22.0`
 - pnpm `10.15.1`
 
 Common commands:
@@ -48,12 +48,14 @@ pnpm run ci
 
 ## Features
 
-- Astro 6 static blog with the two-column writing theme and mobile layout.
+- Astro 7 static blog with the two-column writing theme and mobile layout.
 - Content collections: essays, bits, memo, and about page.
 - RSS endpoints: `/rss.xml`, `/archive/rss.xml`, and `/essay/rss.xml`.
 - Markdown rendering supports code-block toolbar, callouts, figures/galleries, Mermaid, math, and About-page friend/FAQ directives.
-- Local Admin Console includes Theme, Content, Images, Checks, and Data Console.
+- Local Admin Console includes Theme, Content, Images, and Data Console.
 - Content Console supports creating and editing essays, bits, memo, and about page, plus export, bulk status actions, and supported local image uploads.
+- Theme Console supports custom site icon uploads.
+- Image uploads default to local storage, with optional S3-compatible storage; tag route keys are validated on save.
 
 ## Content Structure
 
@@ -74,7 +76,6 @@ Main entries:
 - `/admin/theme/`: site, sidebar, home page, and inner-page settings
 - `/admin/content/`: content management, draft creation, editing, and export
 - `/admin/images/`: image browser, path helper, and supported local uploads
-- `/admin/checks/`: structured checks
 - `/admin/data/`: settings snapshot import/export
 
 Admin write features are local-development tools only. Production builds remain static output, and `/api/admin/**` should not be treated as public production APIs.

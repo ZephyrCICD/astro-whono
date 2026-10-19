@@ -3,6 +3,7 @@ title: Admin Console 快速指南
 description: 介绍 astro-whono 本地 Admin Console 的入口、各页面功能。
 badge: Guide
 date: 2026-04-24
+updatedAt: 2026-10-19
 tags: [ "Admin Console", "Guide" ]
 draft: false
 archive: true
@@ -35,7 +36,6 @@ npm run dev
 | `/admin/theme/` | Theme Console | 编辑站点信息、侧栏、首页、内页文案 |
 | `/admin/content/` | Content Console | 文章管理与可视化写作 |
 | `/admin/images/` | Images Console | 浏览图片资源，复制可用路径 |
-| `/admin/checks/` | Checks Console | 查看结构化诊断，做发布前检查 |
 | `/admin/data/` | Data Console | 导入与导出主题设置，便于迁移和备份 |
 
 ## 主要页面
@@ -60,16 +60,10 @@ Content Console 是内容管理与可视化写作入口，可以集中查看和�
 
 ### 🖼️ Images Console
 
-Images Console 可浏览图片资源、核对图片信息，并复制可用于配置或内容字段的路径。
+Images Console 可浏览本地与云端图片、核对图片信息，并复制可用于配置或内容字段的路径或 URL。
 
-目前定位接近资源浏览器，暂不支持压缩、删除或替换文件。
-需要换图时，先把图片放到项目约定目录，再回到对应页面选择或填写路径。
-
-### ✅ Checks Console
-
-Checks Console 做发布前检查，会把内容、配置、图片引用和约定风险整理成诊断结果。
-
-这个页面不直接修改文件。发现问题后，再回到 Theme、Content 或源码里处理。
+对象存储配置和实际服务验证说明见 [Content Console 使用指南](/archive/content-console-guide/)。
+需要更换本地图片时，先把图片放到项目约定目录，再回到对应页面选择或填写路径。
 
 ### 📤 Data Console
 

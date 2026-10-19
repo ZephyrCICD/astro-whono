@@ -20,7 +20,7 @@
 
 环境要求：
 
-- Node.js `>=22.12.0`
+- Node.js `>=22.22.0`
 - pnpm `10.15.1`
 
 常用命令：
@@ -48,12 +48,14 @@ pnpm run ci
 
 ## 功能
 
-- Astro 6 静态博客，保留双栏写作主题和移动端适配。
+- Astro 7 静态博客，保留双栏写作主题和移动端适配。
 - 内容集合：随笔、絮语、小记、关于页。
 - RSS：`/rss.xml`、`/archive/rss.xml`、`/essay/rss.xml`。
 - Markdown 渲染支持代码块工具栏、callout、figure/gallery、Mermaid、数学公式和 About 页友链/FAQ 指令。
-- 本地 Admin Console 支持 Theme、Content、Images、Checks、Data Console。
+- 本地 Admin Console 支持 Theme、Content、Images、Data Console。
 - Content Console 支持新建与编辑随笔、絮语、小记、关于页，以及内容导出、批量状态操作和图片上传。
+- Theme Console 支持上传自定义站点图标。
+- 图片上传默认保存到本地，可选配置 S3 兼容存储；标签在保存时校验路由有效性。
 
 ## 内容结构
 
@@ -74,7 +76,6 @@ pnpm run ci
 - `/admin/theme/`：站点、侧栏、首页、内页文案等主题配置
 - `/admin/content/`：内容管理、新建草稿、编辑与导出
 - `/admin/images/`：图片资源浏览、路径辅助和受支持的本地上传
-- `/admin/checks/`：结构化检查
 - `/admin/data/`：settings 快照导入导出
 
 这些后台写入能力只面向本地开发。生产构建仍是静态站点输出，`/api/admin/**` 不作为公开生产 API 使用。
