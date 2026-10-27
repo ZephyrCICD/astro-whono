@@ -17,8 +17,8 @@ if (
 
 export const site = {
   url: hasSiteUrl ? siteUrl : fallbackSiteUrl,
-  title: 'Zephyr CI/CD',
-  brandTitle: 'Zephyr CI/CD',
+  title: '常温',
+  brandTitle: '常温',
   author: 'Zephyr',
   authorAvatar: 'author/avatar.webp',
   description: 'Zephyr Dev Log'

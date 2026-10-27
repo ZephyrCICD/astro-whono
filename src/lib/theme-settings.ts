@@ -464,7 +464,7 @@ const cloneThemeSettingsReadDiagnostics = (
 ): ThemeSettingsReadDiagnostic[] => diagnostics.map((diagnostic) => ({ ...diagnostic }));
 
 const DEFAULT_SITE: SiteSettings = {
-  title: 'Zephyr CI/CD',
+  title: '常温',
   description: 'Zephyr Dev Log',
   defaultLocale: 'zh-CN',
   footer: {
@@ -492,7 +492,7 @@ const DEFAULT_SITE: SiteSettings = {
 };
 
 const DEFAULT_SHELL: ShellSettings = {
-  brandTitle: 'Zephyr CI/CD',
+  brandTitle: '常温',
   quote: LEGACY_QUOTE,
   nav: cloneNavItems(LEGACY_NAV)
 };
